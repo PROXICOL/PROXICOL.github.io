@@ -212,6 +212,13 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   #panel-settings .row .btn, #settings-back { padding: 8px 12px; font-size: 15px; }
 }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+
+/* Halloween logo: a jack-o'-lantern after PANIC and a spider hanging from the title card */
+.title-card { position: relative; }
+:root.halloween .title-card h1 span::after { content: ""; display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.1em; vertical-align: -0.03em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='45' y='4' width='9' height='18' rx='3' fill='%233a5a1e'/%3E%3Cellipse cx='31' cy='58' rx='26' ry='36' fill='%23ff7a1a'/%3E%3Cellipse cx='69' cy='58' rx='26' ry='36' fill='%23ff7a1a'/%3E%3Cellipse cx='50' cy='58' rx='27' ry='38' fill='%23ff8f2e'/%3E%3Cpath d='M27 53 L42 53 L34.5 38 Z M58 53 L73 53 L65.5 38 Z' fill='%23ffd65a'/%3E%3Cpath d='M25 66 L35 74 L43 66 L50 76 L57 66 L65 74 L75 66 Q50 98 25 66 Z' fill='%23ffd65a'/%3E%3C/svg%3E") center / contain no-repeat; }
+:root.halloween .title-card::after { content: ""; position: absolute; top: 10px; right: 22px; width: 22px; height: 56px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 100'%3E%3Cline x1='20' y1='0' x2='20' y2='66' stroke='%23d8d2e6' stroke-opacity='.55' stroke-width='1.5'/%3E%3Cg stroke='%230a0810' stroke-width='3' stroke-linecap='round' fill='none'%3E%3Cpath d='M14 78 L4 70 L1 60 M14 82 L3 82 L0 90 M15 86 L6 94 L5 100 M26 78 L36 70 L39 60 M26 82 L37 82 L40 90 M25 86 L34 94 L35 100'/%3E%3C/g%3E%3Cellipse cx='20' cy='83' rx='9' ry='11' fill='%230a0810'/%3E%3Ccircle cx='20' cy='70' r='6' fill='%230a0810'/%3E%3Ccircle cx='17.5' cy='69' r='1.6' fill='%23ff9a2e'/%3E%3Ccircle cx='22.5' cy='69' r='1.6' fill='%23ff9a2e'/%3E%3C/svg%3E") top center / contain no-repeat; animation: spider 3.4s ease-in-out infinite; pointer-events: none; }
+@keyframes spider { 0%, 100% { transform: translateY(-10px); } 50% { transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { :root.halloween .title-card::after { animation: none; } }
 </style></head><body>
 <div id="stage">
   <canvas id="game" aria-label="Belt Panic game area. Press 1, 2 or 3 (or tap the left, middle or right third) to kick a crate into the bin below."></canvas>
