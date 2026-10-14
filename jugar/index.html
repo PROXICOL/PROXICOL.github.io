@@ -17,6 +17,7 @@
   --body: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   color-scheme: dark;
 }
+:root.halloween { --bg: #110d17; --floor: #1b1524; --panel: #231c2e; --steel: #3c3349; --steel-hi: #5b4e6c; --hazard: #ff7a1a; --gold: #ff9a2e; --muted: #a197b0; }
 html, body { height: 100%; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 18px; overflow: hidden; -webkit-tap-highlight-color: transparent; }
@@ -74,6 +75,9 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
 /* title */
 .title-card { width: min(420px, 100%); background: rgba(32, 38, 47, 0.94); }
 .tagline { font-size: 17px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips:not(:has(> :not([hidden]))) { display: none; }
+.season-chip { background: var(--hazard); color: #16181c; font-family: var(--display); font-size: 13px; padding: 4px 10px; border-radius: 999px; }
 .streak-chip { justify-self: start; border: 2px solid var(--hazard); color: var(--hazard); font-family: var(--display); font-size: 13px; padding: 3px 10px; border-radius: 999px; }
 .btn.big { font-size: 28px; padding: 16px; }
 .row.three > * { flex: 1 1 0; min-width: 0; }
@@ -166,6 +170,12 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   #panel-over .btn.primary { padding: 10px 12px; font-size: 20px; }
   #panel-over h2 { font-size: 20px; }
   .goal, .note { font-size: 13px; }
+  #panel-settings .card { gap: 7px; }
+  #panel-settings h2 { font-size: 20px; }
+  .settings { gap: 6px; }
+  .setting { padding: 3px 4px 3px 12px; font-size: 15px; }
+  .btn.toggle { padding: 5px 10px; font-size: 14px; }
+  #panel-settings .row .btn, #settings-back { padding: 8px 12px; font-size: 15px; }
 }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 </style></head><body>
@@ -179,7 +189,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       <div class="stripe"></div>
       <h1>BELT <span>PANIC</span></h1>
       <p class="tagline" data-i18n="tagline"></p>
-      <span class="streak-chip" id="streak-chip" hidden></span>
+      <div class="chips"><span class="season-chip" id="season-chip" data-i18n="seasonChip" hidden></span><span class="streak-chip" id="streak-chip" hidden></span></div>
       <button type="button" class="btn primary big" id="play" data-i18n="play"></button>
       <div class="row three">
         <button type="button" class="btn" data-open-shop id="open-shop-title" data-i18n="upgrades"></button>
@@ -261,6 +271,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
         <div class="setting"><span data-i18n="music"></span><button type="button" class="btn toggle" id="set-music"></button></div>
         <div class="setting"><span data-i18n="vibration"></span><button type="button" class="btn toggle" id="set-vibration"></button></div>
         <div class="setting"><span data-i18n="language"></span><button type="button" class="btn toggle" id="set-language"></button></div>
+        <div class="setting" hidden><span data-i18n="theme"></span><button type="button" class="btn toggle" id="set-theme"></button></div>
       </div>
       <div class="row">
         <button type="button" class="btn" id="set-howto" data-i18n="howTo"></button>
@@ -315,6 +326,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       tut0: 'Kick each crate into the bin of the same colour',
       tutTap: 'Tap here!', tutTapKey: 'Tap here or press {k}',
       tutGold: 'Gold crates fit any bin: +5 points', tutBomb: 'Never kick a bomb. Let it roll away!',
+      tutGoldH: 'Pumpkin crates fit any bin: +5 points', themeHalloween: 'Halloween', themeClassic: 'Classic', theme: 'Theme', seasonChip: 'HALLOWEEN EDITION',
       tutRetry: 'Try again!', tutDone: "YOU'RE READY!", turn: 'Turn your phone sideways for a bigger belt',
     },
     es: {
@@ -346,6 +358,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       tut0: 'Patea cada caja al contenedor de su mismo color',
       tutTap: '¡Toca aquí!', tutTapKey: 'Toca aquí o presiona {k}',
       tutGold: 'Las cajas doradas sirven en cualquier contenedor: +5', tutBomb: 'Nunca patees una bomba. ¡Déjala pasar!',
+      tutGoldH: 'Las cajas calabaza sirven en cualquier contenedor: +5', themeHalloween: 'Halloween', themeClassic: 'Clásico', theme: 'Tema', seasonChip: 'EDICIÓN HALLOWEEN',
       tutRetry: '¡Otra vez!', tutDone: '¡LISTO PARA TRABAJAR!', turn: 'Gira el teléfono para ver la banda más grande',
     },
   };
@@ -797,15 +810,20 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   const H = 540;
 
   // ------------------------------------------------------------------ palette (mirrors the CSS tokens)
-  const css = getComputedStyle(document.documentElement);
-  const tok = (n, f) => (css.getPropertyValue(n).trim() || f);
-  const C = {
-    bg: tok('--bg', '#12161d'), floor: tok('--floor', '#1a2029'), steel: tok('--steel', '#38424f'),
-    steelHi: tok('--steel-hi', '#566273'), hazard: tok('--hazard', '#f2b705'), ink: tok('--ink', '#eef1f5'),
-    muted: tok('--muted', '#8e99a9'), red: tok('--crate-red', '#e5484d'), blue: tok('--crate-blue', '#3d8bd4'),
-    green: tok('--crate-green', '#3fb768'), gold: tok('--gold', '#ffcf4d'), bomb: tok('--bomb', '#22262d'),
-  };
-  const CRATE_COL = [C.red, C.blue, C.green];
+  const C = {};
+  const CRATE_COL = [];
+  function readPalette() {
+    const css = getComputedStyle(document.documentElement);
+    const tok = (n, f) => (css.getPropertyValue(n).trim() || f);
+    Object.assign(C, {
+      bg: tok('--bg', '#12161d'), floor: tok('--floor', '#1a2029'), steel: tok('--steel', '#38424f'),
+      steelHi: tok('--steel-hi', '#566273'), hazard: tok('--hazard', '#f2b705'), ink: tok('--ink', '#eef1f5'),
+      muted: tok('--muted', '#8e99a9'), red: tok('--crate-red', '#e5484d'), blue: tok('--crate-blue', '#3d8bd4'),
+      green: tok('--crate-green', '#3fb768'), gold: tok('--gold', '#ffcf4d'), bomb: tok('--bomb', '#22262d'),
+    });
+    CRATE_COL.splice(0, 3, C.red, C.blue, C.green);
+  }
+  readPalette();
   const SHAPE = ['circle', 'square', 'triangle'];
   const DISPLAY = '"Bungee", "Arial Black", Impact, sans-serif';
   const BODY = '"Barlow Condensed", "Arial Narrow", system-ui, sans-serif';
@@ -822,6 +840,24 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   if (loaded.tutorialDone === undefined && save.plays > 0) save.tutorialDone = true;   // players from 1.0 skip it
   function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
   I18n.set(save.lang || I18n.detect());
+
+  // ------------------------------------------------------------------ seasonal theme
+  // Halloween look from 1 October to 2 November (phone date); off by itself afterwards. Settings can turn it off.
+  function currentSeason() {
+    if (window.__BELT_SEASON__ !== undefined) return window.__BELT_SEASON__;   // test hook
+    const d = new Date();
+    const m = d.getMonth();
+    return m === 9 || (m === 10 && d.getDate() <= 2) ? 'halloween' : null;
+  }
+  const SEASON = currentSeason();
+  let theme = 'classic';
+  function applyTheme() {
+    theme = SEASON && save.theme !== 'classic' ? SEASON : 'classic';
+    document.documentElement.classList.toggle('halloween', theme === 'halloween');
+    readPalette();
+  }
+  applyTheme();
+  const spooky = () => theme === 'halloween';
 
   const isPlaying = () => mode === 'play';
 
@@ -1025,9 +1061,13 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
 
     // music: a 4-bar factory groove (Am G F G), tempo follows the belt
     const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
-    const ROOTS = [45, 43, 41, 43];
+    const SONGS = {
+      classic: { roots: [45, 43, 41, 43], lead: [[69, 0, 72, 0, 76, 0, 72, 0], [67, 0, 71, 0, 74, 0, 71, 0], [65, 0, 69, 0, 72, 0, 69, 0], [67, 0, 71, 0, 74, 0, 79, 0]], wave: 'triangle' },
+      // Halloween: D minor, B flat, G minor, A7, with a ghostly sine lead
+      halloween: { roots: [38, 46, 43, 45], lead: [[74, 0, 77, 0, 81, 0, 77, 0], [70, 0, 74, 0, 77, 0, 74, 0], [67, 0, 70, 0, 74, 0, 70, 0], [69, 0, 73, 0, 76, 0, 79, 0]], wave: 'sine' },
+    };
+    let song = SONGS.classic;
     const BASS = [0, 0, 12, 0, 0, 12, 0, 7];
-    const LEAD = [[69, 0, 72, 0, 76, 0, 72, 0], [67, 0, 71, 0, 74, 0, 71, 0], [65, 0, 69, 0, 72, 0, 69, 0], [67, 0, 71, 0, 74, 0, 79, 0]];
     let playing = false;
     let timer = null;
     let nextAt = 0;
@@ -1040,10 +1080,10 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         const bar = Math.floor(step / 8) % 4;
         const e = step % 8;
         const len = 60 / tempo / 2;
-        tone(midi(ROOTS[bar] + BASS[e]), len * 0.9, 'square', 0.22, 0, nextAt, musicBus);
+        tone(midi(song.roots[bar] + BASS[e]), len * 0.9, 'square', 0.22, 0, nextAt, musicBus);
         if (e % 4 === 0) tone(120, 0.16, 'sine', 0.55, 0.3, nextAt, musicBus);
         if (e % 2 === 1) noise(0.04, 0.12, nextAt, musicBus, 6000);
-        if (loops % 2 === 1 && LEAD[bar][e]) tone(midi(LEAD[bar][e]), len * 1.6, 'triangle', 0.13, 0, nextAt, musicBus);
+        if (loops % 2 === 1 && song.lead[bar][e]) tone(midi(song.lead[bar][e]), len * 1.6, song.wave, song.wave === 'sine' ? 0.2 : 0.13, 0, nextAt, musicBus);
         nextAt += len;
         step += 1;
         if (step % 32 === 0) loops += 1;
@@ -1055,6 +1095,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       setMuted(m) { save.muted = m; persist(); levels(); },
       setMusic(on) { save.music = on; persist(); levels(); },
       setTempo(bpm) { tempo = bpm; },
+      setSong(name) { song = SONGS[name] || SONGS.classic; },
       startMusic() {
         ensure();
         if (!ctx || playing) return;
@@ -1144,6 +1185,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     for (let x = 0; x <= W; x += 60) { b.moveTo(x, 0); b.lineTo(x, H); }
     for (let y = 0; y <= H; y += 60) { b.moveTo(0, y); b.lineTo(W, y); }
     b.stroke();
+    if (spooky()) drawNight(b);
     b.fillStyle = '#0d1015';
     b.fillRect(0, BELT_Y, W, 30);
     b.fillStyle = C.steel;
@@ -1153,6 +1195,105 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     for (let x = 20; x < W; x += 64) { b.moveTo(x + 7, BELT_Y + 30); b.arc(x, BELT_Y + 30, 7, 0, Math.PI * 2); }
     b.fill();
   }
+  // Halloween night: moon, stars and cobwebs (static, part of the cached background)
+  function drawNight(b) {
+    const glow = b.createRadialGradient(178, 64, 10, 178, 64, 95);
+    glow.addColorStop(0, 'rgba(255,236,190,0.22)');
+    glow.addColorStop(1, 'rgba(255,236,190,0)');
+    b.fillStyle = glow;
+    b.fillRect(80, 0, 200, 170);
+    b.fillStyle = '#f3e6c4';
+    b.beginPath(); b.arc(178, 64, 30, 0, Math.PI * 2); b.fill();
+    b.fillStyle = 'rgba(160,140,110,0.35)';
+    for (const [cx, cy, r] of [[168, 56, 6], [190, 72, 4.5], [182, 50, 3], [170, 76, 3.5]]) { b.beginPath(); b.arc(cx, cy, r, 0, Math.PI * 2); b.fill(); }
+    b.fillStyle = 'rgba(255,255,255,0.55)';
+    for (const [sx, sy, r] of [[60, 30, 1.4], [300, 22, 1.1], [390, 58, 1.3], [640, 30, 1.2], [700, 66, 1], [860, 104, 1.3], [250, 120, 1], [620, 120, 1.1], [90, 140, 1.2]]) {
+      b.beginPath(); b.arc(sx, sy, r, 0, Math.PI * 2); b.fill();
+    }
+    cobweb(b, 0, 0, 1, 1, 92);
+    cobweb(b, W, H, -1, -1, 110);
+  }
+  function cobweb(b, x0, y0, dx, dy, r) {
+    b.save();
+    b.translate(x0, y0);
+    b.scale(dx, dy);
+    b.strokeStyle = 'rgba(220,215,235,0.22)';
+    b.lineWidth = 1.2;
+    const spokes = 6;
+    b.beginPath();
+    for (let i = 0; i <= spokes; i++) {
+      const a = (i / spokes) * Math.PI / 2;
+      b.moveTo(0, 0); b.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    for (let ring = 1; ring <= 4; ring++) {
+      const rr = (r * ring) / 4.3;
+      for (let i = 0; i < spokes; i++) {
+        const a1 = (i / spokes) * Math.PI / 2;
+        const a2 = ((i + 1) / spokes) * Math.PI / 2;
+        const mid = (a1 + a2) / 2;
+        b.moveTo(Math.cos(a1) * rr, Math.sin(a1) * rr);
+        b.quadraticCurveTo(Math.cos(mid) * rr * 0.86, Math.sin(mid) * rr * 0.86, Math.cos(a2) * rr, Math.sin(a2) * rr);
+      }
+    }
+    b.stroke();
+    b.restore();
+  }
+  // a small carved pumpkin; the face glows and flickers
+  function pumpkin(cx, cy, r, now, seed) {
+    ctx.save();
+    ctx.fillStyle = '#3a5a1e';
+    ctx.fillRect(cx - 2, cy - r - 5, 4, 7);
+    ctx.fillStyle = '#ff7a1a';
+    for (const [ox, w] of [[-r * 0.45, 0.62], [r * 0.45, 0.62], [0, 0.7]]) {
+      ctx.beginPath(); ctx.ellipse(cx + ox, cy, r * w, r * 0.92, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(120,40,0,0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(cx, cy, r * 0.32, r * 0.9, 0, 0, Math.PI * 2); ctx.stroke();
+    const f = 0.75 + 0.25 * Math.sin(now / 90 + seed * 7) * Math.sin(now / 37 + seed);
+    ctx.fillStyle = `rgba(255,214,90,${f})`;
+    const e = r * 0.28;
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.5, cy - r * 0.12); ctx.lineTo(cx - r * 0.5 + e, cy - r * 0.12); ctx.lineTo(cx - r * 0.5 + e / 2, cy - r * 0.42);
+    ctx.moveTo(cx + r * 0.5, cy - r * 0.12); ctx.lineTo(cx + r * 0.5 - e, cy - r * 0.12); ctx.lineTo(cx + r * 0.5 - e / 2, cy - r * 0.42);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.55, cy + r * 0.18);
+    ctx.lineTo(cx - r * 0.3, cy + r * 0.32); ctx.lineTo(cx - r * 0.15, cy + r * 0.18); ctx.lineTo(cx, cy + r * 0.34);
+    ctx.lineTo(cx + r * 0.15, cy + r * 0.18); ctx.lineTo(cx + r * 0.3, cy + r * 0.32); ctx.lineTo(cx + r * 0.55, cy + r * 0.18);
+    ctx.quadraticCurveTo(cx, cy + r * 0.75, cx - r * 0.55, cy + r * 0.18);
+    ctx.fill();
+    ctx.restore();
+  }
+  // bats crossing the night sky
+  function drawBats(now) {
+    for (let i = 0; i < 3; i++) {
+      const speed = 55 + i * 18;
+      const span = W + 260;
+      const x = ((now / 1000) * speed + i * 420) % span - 130;
+      const y = 34 + i * 22 + Math.sin(now / 600 + i * 2) * 10;
+      const flap = Math.sin(now / 70 + i * 3);
+      const s = 1.35 + i * 0.2;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(s, s);
+      ctx.fillStyle = '#050407';
+      ctx.beginPath(); ctx.ellipse(0, 0, 5, 7, 0, 0, Math.PI * 2); ctx.fill();
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(side * 3, -2);
+        ctx.quadraticCurveTo(side * 12, -10 * flap - 4, side * 22, -6 * flap);
+        ctx.quadraticCurveTo(side * 16, 2, side * 13, 1);
+        ctx.quadraticCurveTo(side * 9, 0, side * 3, 4);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#ff9a2e';
+      ctx.fillRect(-2.6, -2.5, 1.6, 1.6);
+      ctx.fillRect(1, -2.5, 1.6, 1.6);
+      ctx.restore();
+    }
+  }
+
   // frame-time watchdog: average over ~1.5 s of play, slower than ~40 fps lowers the resolution one step
   let perfSum = 0;
   let perfN = 0;
@@ -1226,6 +1367,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
           Audio.good(e.combo);
           if (k >= 0) binBounce[k] = 0.25;
           burst(e.x, 360, CRATE_COL[game.bins[k]] || C.ink, 14);
+          if (spooky()) { burst(e.x, 360, '#a855f7', 5); burst(e.x, 360, '#ff7a1a', 5); }
           if (e.combo > 0 && e.combo % 10 === 0) { floatText(e.x, 300, T('combo', { n: L.mult(game) }), C.hazard, 30); multBump = 0.4; Audio.level(); Haptics.buzz('medium'); }
           break;
         case 'score': floatText(e.x, 330, `+${e.pts}`, C.ink); scoreBump = 0.18; scored = true; break;
@@ -1331,6 +1473,9 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     $('set-vibration').parentElement.hidden = !Haptics.available;
     tog('set-language', true, I18n.LANGS[I18n.lang]);
     $('set-privacy').hidden = !Platform.privacyRequired;
+    $('set-theme').parentElement.hidden = !SEASON;
+    tog('set-theme', true, spooky() ? T('themeHalloween') : T('themeClassic'));
+    $('season-chip').hidden = !spooky();
   }
 
   function applyLanguage() {
@@ -1452,6 +1597,14 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     applyLanguage();
   });
   $('set-howto').addEventListener('click', () => { Audio.unlock(); newGame(true); });
+  $('set-theme').addEventListener('click', () => {
+    save.theme = spooky() ? 'classic' : 'season';
+    persist();
+    applyTheme();
+    Audio.setSong(theme);
+    buildBackground(px);
+    refreshMeta();
+  });
   $('set-privacy').addEventListener('click', () => Platform.privacy());
 
   function renderShop() {
@@ -1653,11 +1806,21 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       ctx.strokeStyle = C.red;
       ctx.lineWidth = 4;
       ctx.stroke();
-      ctx.fillStyle = C.red;
-      ctx.font = `22px ${DISPLAY}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('!', c.x, c.y - CRATE / 2 + 2);
+      if (spooky()) {
+        const cx = c.x, cy = c.y - CRATE / 2;
+        ctx.fillStyle = C.red;
+        ctx.beginPath(); ctx.arc(cx, cy - 2, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.fillRect(cx - 6, cy + 4, 12, 7);
+        ctx.fillStyle = C.bomb;
+        ctx.beginPath(); ctx.arc(cx - 4, cy - 2, 3, 0, Math.PI * 2); ctx.arc(cx + 4, cy - 2, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillRect(cx - 3, cy + 6, 1.5, 5); ctx.fillRect(cx + 1.5, cy + 6, 1.5, 5);
+      } else {
+        ctx.fillStyle = C.red;
+        ctx.font = `22px ${DISPLAY}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('!', c.x, c.y - CRATE / 2 + 2);
+      }
       const flick = (Math.sin(performance.now() / 60 + c.id) + 1) / 2;
       ctx.fillStyle = flick > 0.5 ? C.gold : '#ff7a3d';
       ctx.beginPath();
@@ -1692,11 +1855,28 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         ctx.fill();
         ctx.restore();
       }
-      ctx.fillStyle = '#7a5300';
-      ctx.font = `24px ${DISPLAY}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('$', c.x, c.y - CRATE / 2 + 2);
+      if (spooky()) {
+        // carved face, glowing
+        const cx = c.x, cy = c.y - CRATE / 2;
+        ctx.fillStyle = '#3b1600';
+        ctx.beginPath();
+        ctx.moveTo(cx - 13, cy - 2); ctx.lineTo(cx - 5, cy - 2); ctx.lineTo(cx - 9, cy - 10);
+        ctx.moveTo(cx + 13, cy - 2); ctx.lineTo(cx + 5, cy - 2); ctx.lineTo(cx + 9, cy - 10);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(cx - 14, cy + 4); ctx.lineTo(cx - 8, cy + 8); ctx.lineTo(cx - 4, cy + 4); ctx.lineTo(cx, cy + 9);
+        ctx.lineTo(cx + 4, cy + 4); ctx.lineTo(cx + 8, cy + 8); ctx.lineTo(cx + 14, cy + 4);
+        ctx.quadraticCurveTo(cx, cy + 18, cx - 14, cy + 4);
+        ctx.fill();
+        ctx.fillStyle = '#3a5a1e';
+        ctx.fillRect(cx - 2, y - 6, 4, 8);
+      } else {
+        ctx.fillStyle = '#7a5300';
+        ctx.font = `24px ${DISPLAY}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('$', c.x, c.y - CRATE / 2 + 2);
+      }
     } else {
       shapeGlyph(SHAPE[c.kind], c.x, c.y - CRATE / 2, 20, 'rgba(255,255,255,0.92)');
     }
@@ -1707,7 +1887,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     const tut = g.tutorial;
     const c = g.crates.find((x) => !x.falling);
     let hint = T('tut0');
-    if (c && c.kind === KIND.GOLD) hint = T('tutGold');
+    if (c && c.kind === KIND.GOLD) hint = T(spooky() ? 'tutGoldH' : 'tutGold');
     if (c && c.kind === KIND.BOMB) hint = T('tutBomb');
     if (tut.hold && c) {
       const k = L.tutorialTarget(g, c);
@@ -1770,6 +1950,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     ctx.rect(0, 0, W, H);
     ctx.clip();
 
+    if (spooky()) drawBats(now);
     const bins = g ? g.bins : [0, 1, 2];
     const flashOn = g && g.shiftFlash > 0 && Math.floor(g.shiftFlash * 8) % 2 === 0;
 
@@ -1778,7 +1959,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       if (pressFlash[k] > 0) {
         const left = k === 0 ? 0 : (KICKER_X[k - 1] + KICKER_X[k]) / 2;
         const right = k === 2 ? W : (KICKER_X[k] + KICKER_X[k + 1]) / 2;
-        ctx.fillStyle = `rgba(242,183,5,${pressFlash[k] * 0.6})`;
+        ctx.fillStyle = spooky() ? `rgba(255,122,26,${pressFlash[k] * 0.55})` : `rgba(242,183,5,${pressFlash[k] * 0.6})`;
         ctx.fillRect(left, 0, right - left, H);
       }
     }
@@ -1800,6 +1981,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       ctx.fillStyle = 'rgba(0,0,0,0.22)';
       ctx.fillRect(x, y + 84, 128, 36);
       shapeGlyph(SHAPE[bins[k]], KICKER_X[k], y + 44, 38, 'rgba(255,255,255,0.95)');
+      if (spooky()) pumpkin(x + 6, y - 24, 15, now, k);
       if (FINE_POINTER) {
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
         ctx.font = `15px ${BODY}`;
@@ -1826,7 +2008,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       roundRect(x - 26, 172 + reach, 52, 18, 4);
       ctx.fill();
       // window indicator on the belt
-      ctx.strokeStyle = 'rgba(242,183,5,0.35)';
+      ctx.strokeStyle = spooky() ? 'rgba(255,122,26,0.4)' : 'rgba(242,183,5,0.35)';
       ctx.setLineDash([6, 6]);
       ctx.lineWidth = 2;
       const win = g ? g.window : 30;
@@ -2009,6 +2191,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   };
 
   // ------------------------------------------------------------------ boot
+  Audio.setSong(theme);
   resize();
   I18n.apply();
   refreshMeta();
@@ -2024,6 +2207,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       get game() { return game; }, get mode() { return mode; }, save, press, i18n: I18n,
       get musicPlaying() { return Audio.musicPlaying; },
       get dprCap() { return dprCap; },
+      get theme() { return theme; },
     };
   }
 })();
