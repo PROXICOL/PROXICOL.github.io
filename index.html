@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROXICOL · Juegos</title>
+<meta name="description" content="PROXICOL hace juegos arcade sencillos para móvil y navegador. Belt Panic: patea cada caja al contenedor de su color.">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Condensed:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #12161d; --floor: #1a2029; --panel: #20262f; --steel: #38424f; --hazard: #f2b705; --ink: #eef1f5; --muted: #8e99a9; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 19px/1.45 "Barlow Condensed", "Arial Narrow", system-ui, sans-serif; }
+  .stripe { height: 10px; background: repeating-linear-gradient(-45deg, var(--hazard) 0 14px, #16181c 14px 28px); }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 16px 56px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { font-family: "Bungee", Impact, sans-serif; font-size: 22px; letter-spacing: 1px; }
+  .brand span { color: var(--hazard); }
+  nav a { color: var(--muted); text-decoration: none; margin-left: 16px; }
+  nav a:hover { color: var(--ink); }
+  .game { margin-top: 36px; display: grid; grid-template-columns: 1fr 1.25fr; gap: 28px; align-items: center; }
+  .game img.shot { width: 100%; border-radius: 10px; border: 2px solid var(--steel); display: block; }
+  h1 { font-family: "Bungee", Impact, sans-serif; font-weight: 400; font-size: clamp(40px, 7vw, 60px); line-height: 1; margin: 12px 0; }
+  h1 span { color: var(--hazard); }
+  .icon { width: 72px; height: 72px; border-radius: 16px; }
+  p { color: var(--muted); margin: 0 0 12px; }
+  ul { color: var(--muted); padding-left: 20px; margin: 0 0 18px; }
+  .soon { display: inline-block; border: 2px solid var(--hazard); color: var(--hazard); font-family: "Bungee", Impact, sans-serif; font-size: 14px; padding: 6px 12px; border-radius: 999px; }
+  footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--steel); color: var(--muted); font-size: 16px; display: flex; gap: 18px; flex-wrap: wrap; justify-content: space-between; }
+  footer a { color: var(--ink); }
+  [lang-en] { display: none !important; }
+  body.en [lang-es] { display: none !important; }
+  body.en [lang-en] { display: revert !important; }
+  body.en img[lang-en] { display: block !important; }
+  @media (max-width: 720px) { .game { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<main>
+  <header>
+    <div class="brand">PROXI<span>COL</span></div>
+    <nav><a href="privacy.html" lang-es>Privacidad</a><a href="privacy.html" lang-en>Privacy</a><a href="#" id="lang">English</a></nav>
+  </header>
+
+  <section class="game">
+    <div>
+      <img class="icon" src="icon.png" alt="">
+      <h1>BELT <span>PANIC</span></h1>
+      <p lang-es>Las cajas bajan a toda velocidad por la banda. Toca la izquierda, el centro o la derecha para patear cada una al contenedor de su color. Nunca patees una bomba.</p>
+      <p lang-en>Crates are racing down the conveyor. Tap the left, middle or right to kick each one into the bin of its colour. Never kick a bomb.</p>
+      <ul lang-es><li>Partidas rápidas con una mano</li><li>Misiones diarias y mejoras permanentes</li><li>Sin registro, funciona sin conexión</li></ul>
+      <ul lang-en><li>Quick one-thumb runs</li><li>Daily missions and permanent upgrades</li><li>No sign-up, works offline</li></ul>
+      <span class="soon" lang-es>Pronto en Google Play</span><span class="soon" lang-en>Coming soon to Google Play</span>
+    </div>
+    <div>
+      <img class="shot" src="shot-es.jpg" alt="Belt Panic" lang-es>
+      <img class="shot" src="shot-en.jpg" alt="Belt Panic" lang-en>
+    </div>
+  </section>
+
+  <footer>
+    <span>Herick Durán · PROXICOL · Colombia</span>
+    <span><span lang-es>Contacto:</span><span lang-en>Contact:</span> <a href="mailto:hsdb0110@gmail.com">hsdb0110@gmail.com</a></span>
+  </footer>
+</main>
+<script>
+  (function () {
+    var en = !/^es/i.test(navigator.language || '');
+    try { var s = localStorage.getItem('lang'); if (s) en = s === 'en'; } catch (e) {}
+    function apply() { document.body.classList.toggle('en', en); document.documentElement.lang = en ? 'en' : 'es'; document.getElementById('lang').textContent = en ? 'Español' : 'English'; }
+    document.getElementById('lang').addEventListener('click', function (e) { e.preventDefault(); en = !en; try { localStorage.setItem('lang', en ? 'en' : 'es'); } catch (x) {} apply(); });
+    apply();
+  })();
+</script>
+</body>
+</html>
