@@ -364,6 +364,9 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       introHeavy: 'Heavy crate! Kick it twice', introMystery: 'Mystery crate: its colour shows at the last moment', introPower: 'Power-up! Kick it into any bin',
       up_luck: 'Lucky Charm', up_luck_d: 'More gold crates and power-ups', up_powerTime: 'Battery', up_powerTime_d: 'Power-ups last 25% longer',
       up_coinBonus: 'Piggy Bank', up_coinBonus_d: '+10% coins per shift',
+      up_collector: 'Hat Collector', up_collector_d: 'Earn a hard hat every {n} crates of each colour',
+      up_helmets: 'Colour Helmets', up_helmets_d: 'Forgive one mistake per colour each shift (red, blue, green)',
+      hatEarned: '+1 HARD HAT!', helmetSaved: 'THE HELMET SAVED YOU!',
       tagline: 'Kick every crate into the bin of its colour. Never kick a bomb.',
       play: 'Start shift', upgrades: 'Upgrades', missions: 'Missions', settings: 'Settings',
       best: 'Best', coins: 'Coins', streakChip: 'Day {n} streak',
@@ -408,6 +411,9 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       introHeavy: '¡Caja pesada! Patéala dos veces', introMystery: 'Caja misteriosa: su color aparece a último momento', introPower: '¡Potenciador! Patéalo a cualquier contenedor',
       up_luck: 'Amuleto', up_luck_d: 'Más cajas doradas y potenciadores', up_powerTime: 'Batería', up_powerTime_d: 'Los potenciadores duran 25% más',
       up_coinBonus: 'Alcancía', up_coinBonus_d: '+10% de monedas por turno',
+      up_collector: 'Recolector de cascos', up_collector_d: 'Gana un casco cada {n} cajas de cada color',
+      up_helmets: 'Cascos de color', up_helmets_d: 'Perdonan un error por color en cada turno (rojo, azul, verde)',
+      hatEarned: '¡+1 CASCO!', helmetSaved: '¡EL CASCO TE SALVÓ!',
       tagline: 'Patea cada caja al contenedor de su color. Nunca patees una bomba.',
       play: 'Iniciar turno', upgrades: 'Mejoras', missions: 'Misiones', settings: 'Ajustes',
       best: 'Récord', coins: 'Monedas', streakChip: 'Racha: día {n}',
@@ -524,6 +530,14 @@ function createGame(opts = {}) {
     shield: false,                            // blocks the next mistake
     heavyBroken: 0,
     powersUsed: 0,
+    // Hat Collector: sorting this many crates of EVERY colour earns a hard hat (0 = not bought)
+    collectN: [0, 15, 12, 9][up.collector || 0],
+    colorCount: [0, 0, 0],
+    hatCap: 3 + (up.lives || 0) + 2,         // up to two spare hats above the normal maximum
+    hatsEarned: 0,
+    // Colour Helmets: one forgiven mistake per colour and shift (red, then blue, then green)
+    helmets: [0, 1, 2].map((c) => (up.helmets || 0) > c),
+    helmetsOwned: up.helmets || 0,
     crates: [],
     nextId: 1,
     spawnIn: 0.6,
@@ -607,8 +621,13 @@ function emit(g, type, data) {
   g.events.push(Object.assign({ type }, data));
 }
 
-function loseLife(g, reason, x) {
+function loseLife(g, reason, x, color) {
   if (g.tutorial) { tutorialRetry(g, reason, x); return; }
+  if (color !== undefined && color !== null && g.helmets && g.helmets[color]) {   // colour helmet takes the hit
+    g.helmets[color] = false;
+    emit(g, 'helmetUsed', { color, reason, x });
+    return;
+  }
   if (g.shield) {                     // power-up: the mistake costs nothing
     g.shield = false;
     emit(g, 'shieldUsed', { reason, x });
@@ -694,7 +713,7 @@ function update(g, dt) {
           addScore(g, 1, W - 30);
           if (g.tutorial) tutorialAdvance(g);
         } else if (c.kind !== KIND.GOLD && c.kind !== KIND.POWER && !c.grace) {
-          loseLife(g, 'escaped', W - 30);
+          loseLife(g, 'escaped', W - 30, crateColor(c));
         }
         continue;
       }
@@ -731,9 +750,20 @@ function resolveDrop(g, c) {
     g.maxCombo = Math.max(g.maxCombo, g.combo);
     addScore(g, mult(g) * (heavy ? 2 : 1), KICKER_X[c.bin]);
     emit(g, 'good', { x: KICKER_X[c.bin], combo: g.combo, heavy });
+    if (g.collectN && !g.tutorial) {
+      g.colorCount[crateColor(c)] += 1;
+      if (g.colorCount.every((n) => n >= g.collectN)) {
+        g.colorCount = g.colorCount.map((n) => n - g.collectN);
+        if (g.lives < g.hatCap) {
+          g.lives += 1;
+          g.hatsEarned += 1;
+          emit(g, 'hatEarned', { x: KICKER_X[c.bin] });
+        }
+      }
+    }
     if (g.tutorial) tutorialAdvance(g);
   } else {
-    loseLife(g, 'wrong', KICKER_X[c.bin]);
+    loseLife(g, 'wrong', KICKER_X[c.bin], crateColor(c));
   }
 }
 
@@ -802,6 +832,8 @@ const UPGRADES = [
   { id: 'luck', max: 3, cost: [150, 350, 700] },
   { id: 'powerTime', max: 3, cost: [100, 250, 500] },
   { id: 'coinBonus', max: 5, cost: [120, 250, 450, 700, 1000] },
+  { id: 'collector', max: 3, cost: [200, 450, 900] },
+  { id: 'helmets', max: 3, cost: [250, 500, 900] },
 ];
 
 const API = { W, BELT_Y, KICKER_X, CRATE, KIND, POWERS, REVEAL_X, FACTORIES, factoryById, UPGRADES, TUTORIAL_STEPS, tutorialTarget, crateColor, createGame, update, kick, revive, speed, coinsFor, mult };
@@ -1503,6 +1535,14 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     b.stroke();
     b.restore();
   }
+  // small hard-hat icon (HUD)
+  function hardHat(cx, cy, r, col, alpha) {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = col;
+    ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 0); ctx.fill();
+    ctx.fillRect(cx - r * 1.35, cy - 1, r * 2.7, r * 0.42);
+    ctx.globalAlpha = 1;
+  }
   // deterministic pseudo-random numbers for static decorations
   function prand(i) { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
   // Frozen Warehouse: icicles along the roof and a snowdrift on the floor
@@ -1727,6 +1767,16 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
           if (k >= 0) binBounce[k] = 0.3;
           burst(e.x, 360, POWER_COL[e.power], 30, 360);
           floatText(W / 2, 228, T('pw_' + e.power), POWER_COL[e.power], 34, 1.4);
+          break;
+        case 'hatEarned':
+          Audio.level(); Haptics.buzz('medium');
+          burst(W - 40 - (game.lives - 1) * 40, 40, C.hazard, 24, 260);
+          floatText(W / 2, 228, T('hatEarned'), C.hazard, 34, 1.4);
+          break;
+        case 'helmetUsed':
+          Audio.level(); Haptics.buzz('heavy');
+          burst(96 + e.color * 30, 61, CRATE_COL[e.color], 24, 260);
+          floatText(e.x || W / 2, 220, T('helmetSaved'), CRATE_COL[e.color], 30);
           break;
         case 'shieldUsed':
           Audio.level(); Haptics.buzz('heavy');
@@ -2029,7 +2079,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       const cost = maxed ? 0 : u.cost[lvl];
       row.innerHTML = `<div class="u-text"><strong></strong><span></span></div><div class="u-pips"></div><button type="button" class="btn small"></button>`;
       row.querySelector('strong').textContent = T('up_' + u.id);
-      row.querySelector('span').textContent = T('up_' + u.id + '_d');
+      row.querySelector('span').textContent = u.id === 'collector' ? T('up_collector_d', { n: [15, 12, 9][Math.min(lvl, 2)] }) : T('up_' + u.id + '_d');
       const pips = row.querySelector('.u-pips');
       for (let i = 0; i < u.max; i++) {
         const p = document.createElement('i');
@@ -2636,14 +2686,27 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       ctx.fillStyle = m > 1 ? C.hazard : 'rgba(255,255,255,0.25)';
       ctx.fillText(`x${m}`, bx + bw + 12, 91);
       // lives: hard hats (a lost one flies off)
-      for (let i = 0; i < g.maxLives; i++) {
+      for (let i = 0; i < Math.max(g.maxLives, g.lives); i++) {
         const hx = W - 40 - i * 40;
-        ctx.fillStyle = i < g.lives ? C.hazard : 'rgba(255,255,255,0.12)';
+        ctx.fillStyle = i >= g.maxLives ? C.gold : i < g.lives ? C.hazard : 'rgba(255,255,255,0.12)';
         ctx.beginPath();
         ctx.arc(hx, 40, 14, Math.PI, 0);
         ctx.fill();
         ctx.fillRect(hx - 19, 39, 38, 6);
       }
+      // Hat Collector: progress of each colour towards the next hard hat
+      if (g.collectN) {
+        hardHat(80, 33, 9, C.hazard, 1);
+        for (let j = 0; j < 3; j++) {
+          const bx2 = 98 + j * 40;
+          ctx.fillStyle = 'rgba(255,255,255,0.1)';
+          roundRect(bx2, 27, 34, 9, 4); ctx.fill();
+          const f = Math.min(1, g.colorCount[j] / g.collectN);
+          if (f > 0) { ctx.fillStyle = CRATE_COL[j]; roundRect(bx2, 27, Math.max(9, 34 * f), 9, 4); ctx.fill(); }
+        }
+      }
+      // Colour Helmets still available this shift
+      for (let j = 0; j < g.helmetsOwned; j++) hardHat(96 + j * 30, 61, 10, CRATE_COL[j], g.helmets[j] ? 1 : 0.22);
       // active power-ups
       let px2 = W - 40;
       const chip = (kind, frac) => {
