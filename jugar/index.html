@@ -211,6 +211,31 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   .btn.toggle { padding: 5px 10px; font-size: 14px; }
   #panel-settings .row .btn, #settings-back { padding: 8px 12px; font-size: 15px; }
 }
+/* tutorial skip, guide */
+#tut-skip { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); left: calc(64px + env(safe-area-inset-left, 0px)); z-index: 1; height: 46px; padding: 0 14px; font-size: 15px; background: rgba(18, 22, 29, 0.6); opacity: 0.9; }
+#open-settings { position: relative; }
+.dot { position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--crate-red); box-shadow: 0 0 0 2px var(--panel, #20262f); }
+.new-tag { margin-left: 8px; background: var(--crate-red); color: #fff; font-family: var(--body); font-weight: 600; font-size: 12px; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 4px; vertical-align: 2px; }
+.guide-card { width: min(760px, 100%); }
+#guide-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px; max-height: min(58vh, 480px); overflow-y: auto; padding-right: 4px; }
+.g-item { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center; background: var(--floor); border-radius: 8px; padding: 8px 12px 8px 8px; }
+.g-item canvas { width: 56px; height: 56px; }
+.g-item strong { display: block; font-family: var(--display); font-weight: 400; font-size: 16px; }
+.g-item span { display: block; font-size: 14px; line-height: 1.3; color: var(--muted); }
+.g-item strong { line-height: 1.2; margin-bottom: 2px; }
+@media (orientation: landscape) and (max-height: 500px) {
+  #guide-list { max-height: 52vh; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .g-item { grid-template-columns: 44px 1fr; padding: 6px 10px 6px 6px; gap: 10px; }
+  .g-item canvas { width: 44px; height: 44px; }
+  .g-item span { font-size: 13px; }
+}
+@media (orientation: landscape) and (max-height: 400px) {
+  #guide-list { max-height: 52vh; gap: 6px; }
+  .g-item strong { font-size: 14px; }
+  #panel-guide .card { gap: 7px; }
+  #panel-guide h2 { font-size: 20px; }
+  #panel-guide .row .btn { padding: 8px 12px; font-size: 15px; }
+}
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 
 /* Halloween logo: a jack-o'-lantern after PANIC and a spider hanging from the title card */
@@ -223,6 +248,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
 <div id="stage">
   <canvas id="game" aria-label="Belt Panic game area. Press 1, 2 or 3 (or tap the left, middle or right third) to kick a crate into the bin below."></canvas>
   <button type="button" id="hud-pause" class="btn ghost icon" data-i18n-label="pause" hidden><i class="pause-icon"></i></button>
+  <button type="button" id="tut-skip" class="btn ghost" data-i18n="skipTut" hidden></button>
   <div class="turn-hint" data-i18n="turn"></div>
 
   <section class="panel" id="panel-title">
@@ -240,7 +266,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       <div class="row three">
         <button type="button" class="btn" data-open-shop id="open-shop-title" data-i18n="upgrades"></button>
         <button type="button" class="btn" id="open-missions"><span data-i18n="missions"></span><b class="count" id="missions-badge" hidden></b></button>
-        <button type="button" class="btn ghost icon" id="open-settings" data-i18n-label="settings">
+        <button type="button" class="btn ghost icon" id="open-settings" data-i18n-label="settings"><i class="dot" id="settings-dot" hidden></i>
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
         </button>
       </div>
@@ -330,11 +356,23 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
         <div class="setting" hidden><span data-i18n="theme"></span><button type="button" class="btn toggle" id="set-theme"></button></div>
       </div>
       <div class="row">
-        <button type="button" class="btn" id="set-howto" data-i18n="howTo"></button>
+        <button type="button" class="btn" id="set-howto"><span data-i18n="howTo"></span><b class="new-tag" id="howto-new" data-i18n="newTag" hidden></b></button>
         <button type="button" class="btn ghost" id="set-privacy" data-i18n="privacy" hidden></button>
         <a class="btn ghost link" id="set-policy" href="https://proxicol.github.io/privacy.html" target="_blank" rel="noopener" data-i18n="policy"></a>
       </div>
       <button type="button" class="btn" id="settings-back" data-i18n="back"></button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-guide" hidden>
+    <div class="card guide-card">
+      <div class="stripe"></div>
+      <h2 data-i18n="guideTitle"></h2>
+      <div id="guide-list"></div>
+      <div class="row three">
+        <button type="button" class="btn" id="guide-tutorial" data-i18n="replayTut"></button>
+        <button type="button" class="btn" id="guide-back" data-i18n="back"></button>
+      </div>
     </div>
   </section>
 
@@ -395,6 +433,21 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       escaped: 'ESCAPED!', wrong: 'WRONG BIN', boom: 'BOOM', combo: 'COMBO x{n}', shift: 'SHIFT CHANGE! NEW BINS',
       bestHud: 'BEST {n}', missionDone: 'MISSION COMPLETE!',
       tut0: 'Kick each crate into the bin of the same colour',
+      skipTut: 'Skip tutorial', newTag: 'NEW', guideTitle: 'How to play', replayTut: 'Play the tutorial',
+      tutShift: 'Shift change! The colours swap places: find the red bin', tutHeavy: 'Heavy crate: it needs two kicks and scores double',
+      tutHeavy2: 'Dented! Kick it once more', tutMystery: 'Mystery crate: its colour shows near the end. Watch it!',
+      tutMystery2: 'There it is! Send it to its colour', tutPower: 'Power-up: kick it into any bin. This one slows the belt',
+      g_sort: 'Sort the crates', g_sort_d: 'Kick each crate into the bin with the same colour and shape: tap the left, middle or right of the screen.',
+      g_gold: 'Gold crate', g_gold_d: 'Fits any bin and scores +5.', g_goldH: 'Pumpkin crate', g_goldH_d: 'Fits any bin and scores +5.',
+      g_bomb: 'Bomb', g_bomb_d: 'Never kick it. Let it roll away for +1.',
+      g_shift: 'Shift change', g_shift_d: 'Every 30 points the colours swap places. Crates marked ✓ can pass for free or go to their old bin.',
+      g_heavy: 'Heavy crate', g_heavy_d: 'Needs two kicks and scores double.',
+      g_mystery: 'Mystery crate', g_mystery_d: 'Its colour only shows near the end of the belt.',
+      g_power: 'Power-ups', g_power_d: 'Kick them into any bin: slow motion, a shield that forgives one mistake, or double points.',
+      g_combo: 'Combo', g_combo_d: 'Every 10 crates in a row without a mistake raises your points multiplier.',
+      g_hats: 'Hard hats', g_hats_d: 'Your lives. You lose one for a wrong bin, an escaped crate or a kicked bomb.',
+      g_upgrades: 'Upgrades', g_upgrades_d: 'Spend coins on extra hats, the Hat Collector (fill the three-colour meter for a free hat) and Colour Helmets (forgive one mistake of their colour).',
+      g_factories: 'Factories', g_factories_d: 'Unlock the Frozen Warehouse and the Candy Factory: faster belts, more coins and their own record.',
       tutTap: 'Tap here!', tutTapKey: 'Tap here or press {k}',
       tutGold: 'Gold crates fit any bin: +5 points', tutBomb: 'Never kick a bomb. Let it roll away!',
       tutGoldH: 'Pumpkin crates fit any bin: +5 points', themeHalloween: 'Halloween', themeClassic: 'Classic', theme: 'Theme', seasonChip: 'HALLOWEEN EDITION',
@@ -442,6 +495,21 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       escaped: '¡SE ESCAPÓ!', wrong: '¡EQUIVOCADO!', boom: '¡BUM!', combo: 'COMBO x{n}', shift: '¡CAMBIO DE TURNO! NUEVOS COLORES',
       bestHud: 'RÉCORD {n}', missionDone: '¡MISIÓN COMPLETADA!',
       tut0: 'Patea cada caja al contenedor de su mismo color',
+      skipTut: 'Saltar tutorial', newTag: 'NUEVO', guideTitle: 'Cómo jugar', replayTut: 'Jugar el tutorial',
+      tutShift: '¡Cambio de turno! Los colores cambian de lugar: busca el rojo', tutHeavy: 'Caja pesada: necesita dos patadas y da el doble',
+      tutHeavy2: '¡Abollada! Patéala una vez más', tutMystery: 'Caja misteriosa: su color aparece al final. ¡Fíjate bien!',
+      tutMystery2: '¡Ahí está! Mándala a su color', tutPower: 'Potenciador: patéalo a cualquier contenedor. Este pone la banda lenta',
+      g_sort: 'Clasifica las cajas', g_sort_d: 'Patea cada caja al contenedor de su mismo color y forma: toca la izquierda, el centro o la derecha de la pantalla.',
+      g_gold: 'Caja dorada', g_gold_d: 'Sirve en cualquier contenedor y da +5.', g_goldH: 'Caja calabaza', g_goldH_d: 'Sirve en cualquier contenedor y da +5.',
+      g_bomb: 'Bomba', g_bomb_d: 'Nunca la patees. Déjala pasar y ganas +1.',
+      g_shift: 'Cambio de turno', g_shift_d: 'Cada 30 puntos los colores cambian de lugar. Las cajas con ✓ pueden pasar gratis o ir a su contenedor anterior.',
+      g_heavy: 'Caja pesada', g_heavy_d: 'Necesita dos patadas y da el doble de puntos.',
+      g_mystery: 'Caja misteriosa', g_mystery_d: 'Su color solo aparece al final de la banda.',
+      g_power: 'Potenciadores', g_power_d: 'Patéalos a cualquier contenedor: cámara lenta, un escudo que perdona un error o puntos dobles.',
+      g_combo: 'Combo', g_combo_d: 'Cada 10 cajas seguidas sin fallar sube tu multiplicador de puntos.',
+      g_hats: 'Cascos', g_hats_d: 'Son tus vidas. Pierdes uno si una caja va al contenedor equivocado, se escapa o pateas una bomba.',
+      g_upgrades: 'Mejoras', g_upgrades_d: 'Con monedas compras cascos extra, el Recolector (llena el medidor de tres colores y ganas un casco) y los Cascos de color (perdonan un error de su color).',
+      g_factories: 'Fábricas', g_factories_d: 'Desbloquea la Bodega Congelada y la Fábrica de Dulces: bandas más rápidas, más monedas y récord propio.',
       tutTap: '¡Toca aquí!', tutTapKey: 'Toca aquí o presiona {k}',
       tutGold: 'Las cajas doradas sirven en cualquier contenedor: +5', tutBomb: 'Nunca patees una bomba. ¡Déjala pasar!',
       tutGoldH: 'Las cajas calabaza sirven en cualquier contenedor: +5', themeHalloween: 'Halloween', themeClassic: 'Clásico', theme: 'Tema', seasonChip: 'EDICIÓN HALLOWEEN',
@@ -553,14 +621,21 @@ function createGame(opts = {}) {
   };
 }
 
-const TUTORIAL_STEPS = [KIND.RED, KIND.BLUE, KIND.GREEN, KIND.GOLD, KIND.BOMB];
+// Each step is one crate; `shift` swaps the bins first, so the player sees a shift change once.
+const TUTORIAL_STEPS = [
+  { kind: KIND.RED }, { kind: KIND.BLUE }, { kind: KIND.GREEN }, { kind: KIND.GOLD }, { kind: KIND.BOMB },
+  { kind: KIND.RED, shift: true },
+  { kind: KIND.HEAVY, color: KIND.BLUE, hits: 0 },
+  { kind: KIND.MYSTERY, color: KIND.GREEN },
+  { kind: KIND.POWER, power: 'slow' },
+];
 const TUTORIAL_SPEED = 120;
 
-/** Kicker a tutorial crate waits under: the bin of its colour, the middle one for gold. */
+/** Kicker a tutorial crate waits under: the bin of its colour, the middle one for gold and power-ups. */
 function tutorialTarget(g, c) {
-  if (c.kind === KIND.GOLD) return 1;
+  if (c.kind === KIND.GOLD || c.kind === KIND.POWER) return 1;
   if (c.kind === KIND.BOMB) return -1;
-  return g.bins.indexOf(c.kind);
+  return g.bins.indexOf(crateColor(c));
 }
 
 function tutorialAdvance(g) {
@@ -572,6 +647,12 @@ function tutorialAdvance(g) {
     g.spawnIn = 1.4;
     emit(g, 'tutorialDone', {});
   } else {
+    if (TUTORIAL_STEPS[g.tutorial.step].shift) {
+      g.bins = [g.bins[2], g.bins[0], g.bins[1]];
+      g.shiftFlash = 1.6;
+      g.spawnIn = 1.2;
+      emit(g, 'shift', { bins: g.bins.slice(), tutorial: true });
+    }
     emit(g, 'tutorialStep', { step: g.tutorial.step });
   }
 }
@@ -685,7 +766,7 @@ function update(g, dt) {
   g.spawnIn -= dt;
   if (tut) {
     if (g.spawnIn <= 0 && g.crates.length === 0) {
-      g.crates.push({ id: g.nextId++, kind: TUTORIAL_STEPS[tut.step], x: -CRATE, y: BELT_Y, vy: 0, falling: false, bin: -1 });
+      g.crates.push(Object.assign({ id: g.nextId++, x: -CRATE, y: BELT_Y, vy: 0, falling: false, bin: -1 }, TUTORIAL_STEPS[tut.step], { shift: undefined }));
     }
   } else if (g.spawnIn <= 0 && v > 0) {
     const last = g.crates[g.crates.length - 1];
@@ -747,6 +828,7 @@ function resolveDrop(g, c) {
     else g.shield = true;
     g.powersUsed += 1;
     emit(g, 'power', { power: c.power, x: KICKER_X[c.bin] });
+    if (g.tutorial) tutorialAdvance(g);
   } else if (crateColor(c) === bin || crateColor(c) === c.altColor) {
     const heavy = c.kind === KIND.HEAVY;
     g.combo += 1;
@@ -1447,7 +1529,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   // ------------------------------------------------------------------ canvas setup
   const stage = document.getElementById('stage');
   const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
+  let ctx = canvas.getContext('2d');   // swapped briefly to draw the guide's icons
   let scale = 1;
   let offX = 0;
   let offY = 0;
@@ -1811,6 +1893,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         case 'tutorialDone':
           save.tutorialDone = true;
           persist();
+          $('tut-skip').hidden = true;
           floatText(W / 2, 215, T('tutDone'), C.hazard, 40, 1.8);
           Audio.reward();
           Haptics.buzz('medium');
@@ -1871,16 +1954,20 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
 
   // ------------------------------------------------------------------ menus (DOM)
   const $ = (id) => document.getElementById(id);
-  const panels = ['title', 'over', 'shop', 'pause', 'missions', 'daily', 'settings'];
+  const panels = ['title', 'over', 'shop', 'pause', 'missions', 'daily', 'settings', 'guide'];
   function showPanel(name) {
     for (const p of panels) $(`panel-${p}`).hidden = p !== name;
     $('hud-pause').hidden = name !== null;
+    $('tut-skip').hidden = name !== null || !(game && game.tutorial);
   }
   function panelOpen(name) { return !$(`panel-${name}`).hidden; }
   let shopReturn = 'title';
   let missionsReturn = 'title';
 
   function refreshMeta() {
+    const guideNew = !!save.tutorialDone && !save.seen.guide;
+    $('settings-dot').hidden = !guideNew;
+    $('howto-new').hidden = !guideNew;
     for (const el of document.querySelectorAll('[data-best]')) el.textContent = save.best;
     for (const el of document.querySelectorAll('[data-coins]')) el.textContent = save.coins;
     const claimM = M.claimableCount(save);
@@ -1911,6 +1998,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     if (panelOpen('shop')) renderShop();
     if (panelOpen('missions')) renderMissions();
     if (panelOpen('over')) renderOverGoal();
+    if (panelOpen('guide')) renderGuide();
   }
 
   function endRun() {
@@ -2081,7 +2169,79 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     persist();
     applyLanguage();
   });
-  $('set-howto').addEventListener('click', () => { Audio.unlock(); newGame(true); });
+  $('set-howto').addEventListener('click', () => { Audio.unlock(); openGuide(); });
+  $('guide-back').addEventListener('click', () => { refreshMeta(); showPanel('settings'); });
+  $('guide-tutorial').addEventListener('click', () => { Audio.unlock(); newGame(true); });
+  $('tut-skip').addEventListener('click', () => {
+    save.tutorialDone = true;
+    newGame(false);
+  });
+
+  // ------------------------------------------------------------------ guide: every crate and rule, with drawn icons
+  const GUIDE = [
+    { id: 'sort', icon: { kind: KIND.RED } },
+    { id: 'gold', icon: { kind: KIND.GOLD } },
+    { id: 'bomb', icon: { kind: KIND.BOMB } },
+    { id: 'shift', icon: { kind: KIND.BLUE, grace: true } },
+    { id: 'heavy', icon: { kind: KIND.HEAVY, color: KIND.GREEN, hits: 0 } },
+    { id: 'mystery', icon: { kind: KIND.MYSTERY, color: KIND.RED } },
+    { id: 'power', icon: { kind: KIND.POWER, power: 'slow' } },
+    { id: 'combo', icon: 'combo' },
+    { id: 'hats', icon: 'hat' },
+    { id: 'upgrades', icon: 'helmets' },
+    { id: 'factories', icon: 'factory' },
+  ];
+  function guideIcon(spec) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 128;
+    const main = ctx;
+    ctx = cv.getContext('2d');
+    ctx.setTransform(2, 0, 0, 2, 0, 0);
+    try {
+      if (spec === 'hat') hardHat(32, 40, 20, C.hazard, 1);
+      else if (spec === 'helmets') { hardHat(16, 30, 11, CRATE_COL[0], 1); hardHat(48, 30, 11, CRATE_COL[1], 1); hardHat(32, 52, 11, CRATE_COL[2], 1); }
+      else if (spec === 'factory') {
+        ctx.fillStyle = C.steelHi;
+        ctx.fillRect(40, 8, 9, 22);                       // chimney
+        ctx.beginPath();
+        ctx.moveTo(6, 56); ctx.lineTo(6, 30); ctx.lineTo(20, 20); ctx.lineTo(20, 30); ctx.lineTo(34, 20); ctx.lineTo(34, 30);
+        ctx.lineTo(58, 22); ctx.lineTo(58, 56); ctx.closePath(); ctx.fill();
+        for (let j = 0; j < 3; j++) { ctx.fillStyle = CRATE_COL[j]; ctx.fillRect(12 + j * 15, 38, 10, 10); }
+      } else if (spec === 'combo') {
+        ctx.fillStyle = C.hazard; ctx.font = `30px ${DISPLAY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('x2', 32, 34);
+      } else {
+        const c = Object.assign({ id: 1, x: 32, y: 32 + CRATE / 2, vy: 0, falling: false, bin: -1 }, spec);
+        drawCrate(c);
+        if (spec.grace) graceBadge(c);
+      }
+    } finally { ctx = main; }
+    return cv;
+  }
+  function renderGuide() {
+    const list = $('guide-list');
+    list.textContent = '';
+    for (const item of GUIDE) {
+      const row = document.createElement('div');
+      row.className = 'g-item';
+      row.appendChild(guideIcon(item.icon));
+      const txt = document.createElement('div');
+      const title = document.createElement('strong');
+      const key = item.id === 'gold' && spooky() ? 'goldH' : item.id;
+      title.textContent = T('g_' + key);
+      const body = document.createElement('span');
+      body.textContent = T('g_' + key + '_d');
+      txt.append(title, body);
+      row.appendChild(txt);
+      list.appendChild(row);
+    }
+  }
+  function openGuide() {
+    renderGuide();
+    $('guide-list').scrollTop = 0;
+    if (!save.seen.guide) { save.seen.guide = 1; persist(); refreshMeta(); }
+    showPanel('guide');
+  }
   $('set-theme').addEventListener('click', () => {
     save.theme = spooky() ? 'classic' : 'season';
     persist();
@@ -2505,9 +2665,16 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   function drawTutorial(g, now) {
     const tut = g.tutorial;
     const c = g.crates.find((x) => !x.falling);
-    let hint = T('tut0');
-    if (c && c.kind === KIND.GOLD) hint = T(spooky() ? 'tutGoldH' : 'tutGold');
-    if (c && c.kind === KIND.BOMB) hint = T('tutBomb');
+    const step = L.TUTORIAL_STEPS[tut.step] || {};
+    let key = 'tut0';
+    if (step.shift) key = 'tutShift';
+    else if (c && c.kind === KIND.GOLD) key = spooky() ? 'tutGoldH' : 'tutGold';
+    else if (c && c.kind === KIND.BOMB) key = 'tutBomb';
+    else if (c && c.kind === KIND.HEAVY) key = c.hits ? 'tutHeavy2' : 'tutHeavy';
+    else if (c && c.kind === KIND.MYSTERY) key = 'tutMystery';
+    else if (c && c.revealed) key = 'tutMystery2';
+    else if (c && c.kind === KIND.POWER) key = 'tutPower';
+    let hint = `${tut.step + 1}/${L.TUTORIAL_STEPS.length}   ${T(key)}`;
     if (tut.hold && c) {
       const k = L.tutorialTarget(g, c);
       const left = k === 0 ? 0 : (KICKER_X[k - 1] + KICKER_X[k]) / 2;
@@ -2531,8 +2698,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       ctx.moveTo(KICKER_X[k] - 16, ay); ctx.lineTo(KICKER_X[k] + 16, ay); ctx.lineTo(KICKER_X[k], ay + 18);
       ctx.closePath();
       ctx.fill();
-      hint = FINE_POINTER ? T('tutTapKey', { k: k + 1 }) : T('tutTap');
-      pill(hint, W / 2, 510, 24, '#16181c', C.hazard);
+      if (key !== 'tut0') pill(hint, W / 2, 464, 19);   // keep the explanation up while the crate waits
+      pill(FINE_POINTER ? T('tutTapKey', { k: k + 1 }) : T('tutTap'), W / 2, 510, 24, '#16181c', C.hazard);
       return;
     }
     pill(hint, W / 2, 510, 22);
@@ -2719,7 +2886,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         ctx.fillRect(hx - 19, 39, 38, 6);
       }
       // Hat Collector: progress of each colour towards the next hard hat
-      if (g.collectN) {
+      if (g.collectN && !g.tutorial) {
         hardHat(80, 33, 9, C.hazard, 1);
         for (let j = 0; j < 3; j++) {
           const bx2 = 98 + j * 40;
