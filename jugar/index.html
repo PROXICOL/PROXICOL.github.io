@@ -172,8 +172,10 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   #panel-shop .u-text { grid-column: 1 / -1; }
   .mission { grid-template-columns: 1fr; align-content: space-between; }
   .mission .btn { grid-column: 1; grid-row: auto; }
-  #panel-settings .card { width: min(620px, 100%); }
-  .settings { grid-template-columns: 1fr 1fr; }
+  #panel-settings .card { width: min(860px, 100%); }
+  .settings { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  #panel-settings .row { flex-wrap: nowrap; }
+  #panel-settings .row > * { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .setting { font-size: 16px; }
   .btn.toggle { min-width: 90px; font-size: 15px; padding: 7px 10px; }
   .daily-days i { width: 34px; height: 34px; }
@@ -183,7 +185,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   .fac-text span { font-size: 12px; }
   .tab { font-size: 16px; padding: 6px 4px; }
   #ach-list { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); max-height: 46vh; }
-  #shop-list { max-height: 52vh; }
+  #shop-list, #skin-list { max-height: 46vh; }
 }
 @media (orientation: landscape) and (max-height: 400px) {
   #panel-shop p, #panel-missions p, .tagline { display: none; }
@@ -203,7 +205,10 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   #panel-over h2 { font-size: 20px; }
   .goal, .note { font-size: 13px; }
   #ach-list { max-height: 38vh; }
-  #shop-list { max-height: 40vh; }
+  #shop-list, #skin-list { max-height: 40vh; }
+  #panel-over #over-goal { display: none; }
+  #panel-over .xp { gap: 6px; }
+  #panel-over .xp .bar { height: 6px; }
   #panel-missions .card, #panel-shop .card { gap: 7px; }
   .tab { font-size: 15px; padding: 4px; }
   #panel-settings .card { gap: 7px; }
@@ -244,6 +249,37 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
 .upgrade.gears strong { color: var(--hazard); }
 .upgrade.gears .btn.reward { font-size: 15px; white-space: normal; padding: 8px 10px; min-width: 0; letter-spacing: 0; }
 #panel-shop .upgrade.gears { grid-template-columns: 1fr; }
+/* ranking, level, share, skins */
+.ranks-card { width: min(560px, 100%); }
+.lvl-box { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; background: var(--floor); border-radius: 8px; padding: 10px 14px; }
+.lvl-box b { font-family: var(--display); font-weight: 400; font-size: 22px; color: var(--hazard); grid-row: span 2; }
+.lvl-box span { font-size: 15px; color: var(--muted); }
+.lvl-box small { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
+.bar { display: block; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--hazard); border-radius: 4px; transition: width 0.6s ease; }
+#ranks-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+#ranks-list .stat b { font-size: 24px; }
+.soon { text-align: center; font-size: 15px; color: var(--muted); border: 2px dashed var(--steel); border-radius: 8px; padding: 10px; margin: 0; }
+.xp.up span { color: var(--hazard); font-family: var(--display); }
+.xp { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; font-size: 15px; color: var(--muted); }
+.btn.share { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 15px; }
+#skin-list { display: grid; gap: 10px; max-height: min(56vh, 460px); overflow-y: auto; padding-right: 4px; }
+#skin-list h3 { margin: 4px 0 0; font-family: var(--display); font-weight: 400; font-size: 16px; color: var(--hazard); }
+.skin-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.skin { display: grid; gap: 6px; justify-items: center; background: var(--floor); border-radius: 8px; padding: 8px; border: 2px solid transparent; }
+.skin.on { border-color: var(--hazard); }
+.skin canvas { width: 120px; height: 60px; }
+.skin strong { font-family: var(--display); font-weight: 400; font-size: 14px; }
+.skin .btn { width: 100%; padding: 6px 8px; font-size: 14px; }
+@media (orientation: landscape) and (max-height: 400px) {
+  #skin-list { max-height: 44vh; }
+  #panel-ranks .card { gap: 7px; }
+  #panel-ranks h2 { font-size: 20px; }
+  #ranks-list .stat { padding: 5px 10px; }
+  #ranks-list .stat b { font-size: 18px; }
+  .soon { padding: 6px; font-size: 13px; }
+  .xp { font-size: 13px; }
+}
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 
 /* Halloween logo: a jack-o'-lantern after PANIC and a spider hanging from the title card */
@@ -274,18 +310,23 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       <div class="row three">
         <button type="button" class="btn" data-open-shop id="open-shop-title" data-i18n="upgrades"></button>
         <button type="button" class="btn" id="open-missions"><span data-i18n="missions"></span><b class="count" id="missions-badge" hidden></b></button>
+        <button type="button" class="btn ghost icon" id="open-ranks" data-i18n-label="ranks">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v3H8v-3h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zm0 4H6v1a2 2 0 0 0 1 1.7V7zm10 0v2.7A2 2 0 0 0 18 8V7h-1z"/></svg>
+        </button>
         <button type="button" class="btn ghost icon" id="open-settings" data-i18n-label="settings"><i class="dot" id="settings-dot" hidden></i>
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
         </button>
       </div>
-      <div class="meta"><span><span data-i18n="best"></span> <b data-best>0</b></span><span><span data-i18n="coins"></span> <b data-coins>0</b> · <span data-i18n="gears"></span> <b data-gears>0</b></span></div>
+      <div class="meta"><span><span data-i18n="level"></span> <b data-level>1</b> · <span data-i18n="best"></span> <b data-best>0</b></span><span><span data-i18n="coins"></span> <b data-coins>0</b> · <span data-i18n="gears"></span> <b data-gears>0</b></span></div>
     </div>
   </section>
 
   <section class="panel" id="panel-over" hidden>
     <div class="card">
       <div class="stripe"></div>
-      <div class="over-head"><h2 data-i18n="over"></h2><span class="badge" id="over-newbest" data-i18n="newBest" hidden></span></div>
+      <div class="over-head"><h2 data-i18n="over"></h2><span class="badge" id="over-newbest" data-i18n="newBest" hidden></span>
+        <button type="button" class="btn ghost share" id="share"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 16a3 3 0 0 0-2.4 1.2l-6.8-3.4a3 3 0 0 0 0-1.6l6.8-3.4A3 3 0 1 0 15 7l-6.8 3.4a3 3 0 1 0 0 3.2L15 17a3 3 0 1 0 3-1z"/></svg><span data-i18n="share"></span></button></div>
+      <div class="xp" id="over-xp"><span id="over-xp-text"></span><i class="bar"><i id="over-xp-bar"></i></i></div>
       <div class="split">
         <div class="col">
           <div class="stats">
@@ -315,9 +356,13 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   <section class="panel" id="panel-shop" hidden>
     <div class="card">
       <div class="stripe"></div>
-      <h2 data-i18n="shopTitle"></h2>
-      <p data-i18n="shopText"></p>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" id="tab-upgrades" role="tab"><span data-i18n="shopTitle"></span></button>
+        <button type="button" class="tab" id="tab-skins" role="tab"><span data-i18n="skinsTitle"></span></button>
+      </div>
+      <p data-i18n="shopText" id="shop-text"></p>
       <div id="shop-list"></div>
+      <div id="skin-list" hidden></div>
       <div class="meta"><span><span data-i18n="coins"></span> <b data-coins>0</b></span><span><span data-i18n="gears"></span> <b data-gears>0</b></span></div>
       <button type="button" class="btn" id="shop-back" data-i18n="back"></button>
     </div>
@@ -363,6 +408,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
         <div class="setting"><span data-i18n="language"></span><button type="button" class="btn toggle" id="set-language"></button></div>
         <div class="setting" hidden><span data-i18n="reminders"></span><button type="button" class="btn toggle" id="set-reminders"></button></div>
         <div class="setting"><span data-i18n="saver"></span><button type="button" class="btn toggle" id="set-saver"></button></div>
+        <div class="setting" id="feedback-row" hidden><span data-i18n="feedback"></span><button type="button" class="btn toggle" id="set-feedback" data-i18n="send"></button></div>
         <div class="setting" hidden><span data-i18n="theme"></span><button type="button" class="btn toggle" id="set-theme"></button></div>
       </div>
       <div class="row">
@@ -386,6 +432,17 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
     </div>
   </section>
 
+  <section class="panel" id="panel-ranks" hidden>
+    <div class="card ranks-card">
+      <div class="stripe"></div>
+      <h2 data-i18n="ranksTitle"></h2>
+      <div class="lvl-box"><b id="ranks-level"></b><span id="ranks-xp"></span><i class="bar"><i id="ranks-bar"></i></i><small id="ranks-next"></small></div>
+      <div id="ranks-list"></div>
+      <p class="soon" data-i18n="ranksSoon"></p>
+      <button type="button" class="btn" id="ranks-back" data-i18n="back"></button>
+    </div>
+  </section>
+
   <section class="panel" id="panel-remind" hidden>
     <div class="card daily-card">
       <div class="stripe"></div>
@@ -406,7 +463,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   </section>
 </div>
 
-<script>// Belt Panic — text in English and Spanish. The phone's language picks one; Settings can change it.
+<script>window.BELT_VERSION="dev";</script><script>// Belt Panic — text in English and Spanish. The phone's language picks one; Settings can change it.
 (function () {
   'use strict';
   const STR = {
@@ -481,6 +538,17 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       g_gear: 'Gears', g_gear_d: 'Rare crate, fits any bin. Gears let you continue after losing (1, then 2). Also from videos, the hard mission, every 7th day and big achievements.',
       g_orders: 'Orders', g_orders_d: 'Short goals during a shift (sort 6 blue, 10 in a row…). Finish them in 30 seconds for extra coins.',
       g_challenge: 'Daily challenge', g_challenge_d: 'The same crates for everyone each day, no upgrades and no continues. The first try of the day pays a Gear.',
+      level: 'Level', ranks: 'Ranking', ranksTitle: 'RANKING', ranksSoon: 'World leaderboard: coming in a future version',
+      ranksLevel: 'Level {n}', ranksXp: '{a} / {b} XP', ranksNext: 'Next level: +{c} coins', ranksNextGear: 'Next level: +{c} coins and 1 gear',
+      ranksChallenge: 'Challenge today', ranksCombo: 'Best combo', ranksLocked: 'Locked',
+      xpGain: '+{n} XP · level {l}', levelUp: 'LEVEL {n}!', levelReward: '+{c} coins', share: 'Share',
+      shareText: 'I scored {score} points in Belt Panic ({fac}). Can you beat me?', shareCopied: 'Copied! Paste it in your chat',
+      feedback: 'Feedback', send: 'Send', skinsTitle: 'STYLES',
+      sk_crate: 'Crates', sk_belt: 'Belt', sk_kicker: 'Pistons',
+      sk_crate_classic: 'Classic', sk_crate_wood: 'Wood', sk_crate_metal: 'Metal', sk_crate_gloss: 'Glossy', sk_crate_neon: 'Neon',
+      sk_belt_rubber: 'Rubber', sk_belt_rollers: 'Rollers', sk_belt_wood: 'Wood', sk_belt_neon: 'Neon',
+      sk_kicker_steel: 'Industrial', sk_kicker_chrome: 'Chrome', sk_kicker_gold: 'Gold', sk_kicker_robot: 'Robot',
+      skEquip: 'Use', skEquipped: 'In use', skLevel: 'Level {n}', skinUnlocked: 'New style unlocked!',
       tutTap: 'Tap here!', tutTapKey: 'Tap here or press {k}',
       tutGold: 'Gold crates fit any bin: +5 points', tutBomb: 'Never kick a bomb. Let it roll away!',
       tutGoldH: 'Pumpkin crates fit any bin: +5 points', themeHalloween: 'Halloween', themeClassic: 'Classic', theme: 'Theme', seasonChip: 'HALLOWEEN EDITION',
@@ -556,6 +624,17 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       g_gear: 'Engranes', g_gear_d: 'Caja rara que sirve en cualquier contenedor. Los engranes sirven para continuar al perder (1, luego 2). También salen de videos, la misión difícil, cada 7 días seguidos y logros grandes.',
       g_orders: 'Pedidos', g_orders_d: 'Metas cortas durante el turno (clasifica 6 azules, 10 seguidas…). Cúmplelas en 30 segundos y ganas monedas extra.',
       g_challenge: 'Desafío diario', g_challenge_d: 'Las mismas cajas para todos cada día, sin mejoras y sin continuar. El primer intento del día da un engrane.',
+      level: 'Nivel', ranks: 'Clasificación', ranksTitle: 'CLASIFICACIÓN', ranksSoon: 'Tabla mundial: disponible en versiones posteriores',
+      ranksLevel: 'Nivel {n}', ranksXp: '{a} / {b} XP', ranksNext: 'Próximo nivel: +{c} monedas', ranksNextGear: 'Próximo nivel: +{c} monedas y 1 engrane',
+      ranksChallenge: 'Desafío de hoy', ranksCombo: 'Mejor combo', ranksLocked: 'Bloqueada',
+      xpGain: '+{n} XP · nivel {l}', levelUp: '¡NIVEL {n}!', levelReward: '+{c} monedas', share: 'Compartir',
+      shareText: 'Hice {score} puntos en Belt Panic ({fac}). ¿Me ganas?', shareCopied: '¡Copiado! Pégalo en tu chat',
+      feedback: 'Comentarios', send: 'Enviar', skinsTitle: 'ASPECTOS',
+      sk_crate: 'Cajas', sk_belt: 'Cinta', sk_kicker: 'Pistones',
+      sk_crate_classic: 'Clásica', sk_crate_wood: 'Madera', sk_crate_metal: 'Metal', sk_crate_gloss: 'Brillante', sk_crate_neon: 'Neón',
+      sk_belt_rubber: 'Caucho', sk_belt_rollers: 'Rodillos', sk_belt_wood: 'Madera', sk_belt_neon: 'Neón',
+      sk_kicker_steel: 'Industrial', sk_kicker_chrome: 'Cromado', sk_kicker_gold: 'Dorado', sk_kicker_robot: 'Robot',
+      skEquip: 'Usar', skEquipped: 'En uso', skLevel: 'Nivel {n}', skinUnlocked: '¡Aspecto nuevo desbloqueado!',
       tutTap: '¡Toca aquí!', tutTapKey: 'Toca aquí o presiona {k}',
       tutGold: 'Las cajas doradas sirven en cualquier contenedor: +5', tutBomb: 'Nunca patees una bomba. ¡Déjala pasar!',
       tutGoldH: 'Las cajas calabaza sirven en cualquier contenedor: +5', themeHalloween: 'Halloween', themeClassic: 'Clásico', theme: 'Tema', seasonChip: 'EDICIÓN HALLOWEEN',
@@ -1149,6 +1228,7 @@ function claimMission(save, index) {
   if (!m || m.claimed || !isDone(m)) return 0;
   m.claimed = true;
   save.coins += m.reward;
+  if (typeof save.xp === 'number') save.xp += MISSION_XP;   // levels are paid on the next addXp()
   if (m.gears) save.gears = (save.gears || 0) + m.gears;   // the hard mission also pays an Engrane
   return m.reward;
 }
@@ -1342,7 +1422,84 @@ function finishChallenge(save, day, score) {
   return CHALLENGE_GEARS;
 }
 
+// ------------------------------------------------------------------ skins (cosmetic only)
+// cost in coins, or level = unlocked by reaching that player level
+const SKINS = {
+  crate: [{ id: 'classic', cost: 0 }, { id: 'wood', cost: 800 }, { id: 'metal', cost: 1500 }, { id: 'gloss', cost: 2500 }, { id: 'neon', level: 30 }],
+  belt: [{ id: 'rubber', cost: 0 }, { id: 'rollers', cost: 1200 }, { id: 'wood', level: 5 }, { id: 'neon', level: 10 }],
+  kicker: [{ id: 'steel', cost: 0 }, { id: 'chrome', cost: 900 }, { id: 'gold', cost: 2000 }, { id: 'robot', level: 20 }],
+};
+function ensureSkins(save) {
+  save.skin = Object.assign({ crate: 'classic', belt: 'rubber', kicker: 'steel' }, save.skin || {});
+  save.skinsOwned = save.skinsOwned || [];
+  return save.skin;
+}
+
+/** True when the player may equip this skin (free, bought, or reached its level). */
+function skinOwned(save, cat, id) {
+  const s = SKINS[cat].find((x) => x.id === id);
+  if (!s) return false;
+  if (s.level) return levelInfo(save.xp || 0).level >= s.level;
+  return s.cost === 0 || (save.skinsOwned || []).includes(cat + ':' + id);
+}
+function buySkin(save, cat, id) {
+  const s = SKINS[cat].find((x) => x.id === id);
+  if (!s || s.level || skinOwned(save, cat, id) || save.coins < s.cost) return false;
+  save.coins -= s.cost;
+  save.skinsOwned.push(cat + ':' + id);
+  return true;
+}
+function equipSkin(save, cat, id) {
+  if (!skinOwned(save, cat, id)) return false;
+  save.skin[cat] = id;
+  return true;
+}
+
+// ------------------------------------------------------------------ player level (XP from every shift)
+const MAX_LEVEL = 99;
+/** XP needed to go from level L to L+1: 100, then about 15% more each level. */
+function xpToNext(level) { return Math.round(100 * Math.pow(1.15, level - 1)); }
+function levelInfo(xp) {
+  let level = 1, rest = xp;
+  while (level < MAX_LEVEL && rest >= xpToNext(level)) { rest -= xpToNext(level); level += 1; }
+  return { level, into: rest, need: xpToNext(level) };
+}
+/** XP for a shift: its score plus 15 per order filled. */
+function xpForRun(g) { return g.score + 15 * (g.ordersDone || 0); }
+const MISSION_XP = 20;
+/** Rewards for reaching a level: coins every level, an Engrane every 5 levels; skins unlock by level on their own. */
+function levelReward(level) {
+  return { coins: 50 + 10 * level, gears: level % 5 === 0 ? 1 : 0, skins: Object.keys(SKINS).flatMap((cat) => SKINS[cat].filter((s) => s.level === level).map((s) => cat + ':' + s.id)) };
+}
+/** Players from older versions start at a level that reflects what they already played (no back-pay). */
+function ensureLevel(save) {
+  if (typeof save.xp !== 'number') {
+    const st = save.stats || {};
+    save.xp = Math.round((st.sorted || 0) * 0.8 + (st.runs || 0) * 5);
+    save.levelPaid = levelInfo(save.xp).level;
+  }
+  if (typeof save.levelPaid !== 'number') save.levelPaid = levelInfo(save.xp).level;
+  return levelInfo(save.xp);
+}
+/** Adds XP, pays the rewards of every level reached; returns the list of { level, coins, gears, skins }. */
+function addXp(save, n) {
+  ensureLevel(save);
+  save.xp += Math.max(0, Math.round(n));
+  const now = levelInfo(save.xp).level;
+  const ups = [];
+  while (save.levelPaid < now) {
+    save.levelPaid += 1;
+    const r = levelReward(save.levelPaid);
+    save.coins += r.coins;
+    save.gears = (save.gears || 0) + r.gears;
+    ups.push(Object.assign({ level: save.levelPaid }, r));
+  }
+  return ups;
+}
+
 const META = {
+  SKINS, ensureSkins, skinOwned, buySkin, equipSkin,
+  MAX_LEVEL, MISSION_XP, xpToNext, levelInfo, xpForRun, levelReward, ensureLevel, addXp,
   START_GEARS, GEAR_ADS_PER_DAY, CHALLENGE_GEARS, STREAK_GEARS, ensureGears, spendGears, gearAdsLeft, gearFromAd,
   challengeSeed, ensureChallenge, finishChallenge, streakGears,
   ACHIEVEMENTS, ensureStats, statValue, addRunStats, checkAchievements, claimAchievement, achievementsClaimable, unlockFactory,
@@ -1401,6 +1558,12 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   if (loaded.tutorialDone === undefined && save.plays > 0) save.tutorialDone = true;   // players from 1.0 skip it
   M.ensureStats(save);
   M.ensureGears(save);
+  M.ensureSkins(save);
+  M.ensureLevel(save);
+  // Google Form for comments (prefilled link; VERSION and TELEFONO are replaced). Empty = button hidden.
+  const FEEDBACK_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdFDXVmzKV16kQdQ_gaIIoMSkAD4csgP5npNcm8h7LJ__Xflw/viewform?usp=pp_url&entry.1890597761=VERSION&entry.236920487=TELEFONO';
+  const SHARE_URL = 'https://proxicol.github.io/beltpanic/';
+  const skin = (cat) => save.skin[cat];
   function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
   I18n.set(save.lang || I18n.detect());
 
@@ -1784,8 +1947,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     if (sweet()) drawCandy(b);
     b.fillStyle = '#0d1015';
     b.fillRect(0, BELT_Y, W, 30);
-    b.fillStyle = C.steel;
-    b.fillRect(0, BELT_Y + 2, W, 22);
+    beltBody(b, skin('belt'), W);
     b.fillStyle = '#0d1015';
     b.beginPath();
     for (let x = 20; x < W; x += 64) { b.moveTo(x + 7, BELT_Y + 30); b.arc(x, BELT_Y + 30, 7, 0, Math.PI * 2); }
@@ -2214,7 +2376,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
 
   // ------------------------------------------------------------------ menus (DOM)
   const $ = (id) => document.getElementById(id);
-  const panels = ['title', 'over', 'shop', 'pause', 'missions', 'daily', 'settings', 'guide', 'remind'];
+  const panels = ['title', 'over', 'shop', 'pause', 'missions', 'daily', 'settings', 'guide', 'remind', 'ranks'];
   function showPanel(name) {
     for (const p of panels) $(`panel-${p}`).hidden = p !== name;
     $('hud-pause').hidden = name !== null;
@@ -2232,6 +2394,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     for (const el of document.querySelectorAll('[data-best]')) el.textContent = save.best;
     for (const el of document.querySelectorAll('[data-coins]')) el.textContent = save.coins;
     for (const el of document.querySelectorAll('[data-gears]')) el.textContent = save.gears;
+    for (const el of document.querySelectorAll('[data-level]')) el.textContent = M.levelInfo(save.xp).level;
+    $('feedback-row').hidden = !FEEDBACK_URL;
     $('challenge-chip').hidden = !save.tutorialDone || viewFactory === 'challenge' || M.ensureChallenge(save, M.dayKey()).rewarded;
     $('set-reminders').parentElement.hidden = !Notify.available;
     tog0('set-reminders', !!save.reminders);
@@ -2291,6 +2455,29 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     const freshAch = M.checkAchievements(save);
     if (freshAch.length) { floatText(W / 2, 200, T('achDone'), C.gold, 34, 1.8); Audio.reward(); }
     save.coins += lastEarned;
+    // player level: XP for this shift (a continued shift only adds what is new)
+    const xpTotal = M.xpForRun(game);
+    const xpGain = xpTotal - (game.xpPaid || 0);
+    game.xpPaid = xpTotal;
+    const ups = M.addXp(save, xpGain);
+    const li = M.levelInfo(save.xp);
+    $('over-xp-text').textContent = T('xpGain', { n: xpGain, l: li.level });
+    $('over-xp').classList.toggle('up', ups.length > 0);
+    if (ups.length) {
+      const coins = ups.reduce((a, u) => a + u.coins, 0), gears = ups.reduce((a, u) => a + u.gears, 0);
+      $('over-xp-text').textContent = `${T('levelUp', { n: ups[ups.length - 1].level })} ${T('levelReward', { c: coins })}${gears ? ' · ' + T('dailyGears', { n: gears }).replace(' · ', '') : ''}`;
+    }
+    $('over-xp-bar').style.width = `${Math.round((li.into / li.need) * 100)}%`;
+    if (ups.length) {
+      const last = ups[ups.length - 1];
+      const coins = ups.reduce((a, u) => a + u.coins, 0);
+      setTimeout(() => {
+        floatText(W / 2, 170, T('levelUp', { n: last.level }), C.hazard, 44, 2);
+        floatText(W / 2, 222, T('levelReward', { c: coins }), C.gold, 26, 2);
+        if (ups.some((u) => u.skins.length)) floatText(W / 2, 262, T('skinUnlocked'), C.ink, 24, 2.2);
+        Audio.level(); Haptics.buzz('medium');
+      }, 300);
+    }
     checkNewDay(false);
     const stats = M.runStats(game);
     M.applyRun(save, stats, game.applied);
@@ -2374,6 +2561,135 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     refreshMeta();
   }
   $('fac-prev').addEventListener('click', () => selectFactory(-1));
+  // ---- share the score (text + link) through the phone's share menu
+  $('share').addEventListener('click', async () => {
+    if (!game) return;
+    const fac = game.daily ? T('fac_challenge') : T('fac_' + game.factory.id);
+    const text = T('shareText', { score: game.score, fac }) + ' ' + SHARE_URL;
+    const cap = window.Capacitor;
+    const Sh = cap && cap.isNativePlatform && cap.isNativePlatform() && cap.Plugins ? cap.Plugins.Share : null;
+    try {
+      if (Sh) { await Sh.share({ text, dialogTitle: 'Belt Panic' }); return; }
+      if (navigator.share) { await navigator.share({ text }); return; }
+    } catch (e) { return; }   // the player closed the share menu
+    try {
+      await navigator.clipboard.writeText(text);
+      const label = $('share').querySelector('span');
+      label.textContent = T('shareCopied');
+      setTimeout(() => { label.textContent = T('share'); }, 2500);
+    } catch (e) { /* no clipboard */ }
+  });
+  // ---- ranking (for now the player's own records; the world table comes with Google Play Games)
+  function openRanks() {
+    const li = M.levelInfo(save.xp);
+    $('ranks-level').textContent = T('ranksLevel', { n: li.level });
+    $('ranks-xp').textContent = T('ranksXp', { a: li.into, b: li.need });
+    $('ranks-bar').style.width = `${Math.round((li.into / li.need) * 100)}%`;
+    const r = M.levelReward(li.level + 1);
+    $('ranks-next').textContent = r.gears ? T('ranksNextGear', { c: r.coins }) : T('ranksNext', { c: r.coins });
+    const list = $('ranks-list');
+    list.textContent = '';
+    const stat = (label, value) => {
+      const d = document.createElement('div');
+      d.className = 'stat';
+      d.innerHTML = '<span></span><b></b>';
+      d.querySelector('span').textContent = label;
+      d.querySelector('b').textContent = value;
+      list.appendChild(d);
+    };
+    for (const f of L.FACTORIES) stat(T('fac_' + f.id), save.factories.includes(f.id) ? factoryBest(f.id) : T('ranksLocked'));
+    stat(T('ranksChallenge'), M.ensureChallenge(save, M.dayKey()).best);
+    stat(T('ranksCombo'), save.stats.bestCombo || 0);
+    showPanel('ranks');
+  }
+  $('open-ranks').addEventListener('click', () => { Audio.unlock(); openRanks(); });
+  $('ranks-back').addEventListener('click', () => showPanel('title'));
+  // ---- comments: the Google Form, with the game version and phone model filled in
+  $('set-feedback').addEventListener('click', () => {
+    const ua = navigator.userAgent;
+    const m = ua.match(/Android [\d.]+; ([^;)]+)/);
+    const phone = m ? m[1].replace(/\s*Build\/.*$/, '').trim() : (ua.includes('iPhone') ? 'iPhone' : 'web');   // e.g. SM-S918B
+    const url = FEEDBACK_URL.replace('VERSION', encodeURIComponent(window.BELT_VERSION || 'dev')).replace('TELEFONO', encodeURIComponent(phone));
+    window.open(url, '_blank');
+  });
+  // ---- shop tabs: upgrades | styles
+  function shopTab(tab) {
+    $('tab-upgrades').classList.toggle('active', tab === 'up');
+    $('tab-skins').classList.toggle('active', tab === 'skins');
+    $('shop-list').hidden = tab !== 'up';
+    $('shop-text').hidden = tab !== 'up';
+    $('skin-list').hidden = tab !== 'skins';
+    if (tab === 'skins') renderSkins();
+  }
+  $('tab-upgrades').addEventListener('click', () => shopTab('up'));
+  $('tab-skins').addEventListener('click', () => shopTab('skins'));
+  function skinIcon(cat, id) {
+    const cv = document.createElement('canvas');
+    cv.width = 240; cv.height = 120;
+    const main = ctx, prev = save.skin[cat];
+    ctx = cv.getContext('2d');
+    save.skin[cat] = id;
+    try {
+      ctx.setTransform(2, 0, 0, 2, 0, 0);
+      ctx.fillStyle = C.floor; ctx.fillRect(0, 0, 120, 60);
+      if (cat === 'crate') {
+        drawCrate({ id: 1, kind: 0, x: 34, y: 55, vy: 0, falling: false, bin: -1 });
+        drawCrate({ id: 2, kind: 1, x: 86, y: 55, vy: 0, falling: false, bin: -1 });
+      } else if (cat === 'belt') {
+        ctx.translate(0, 18 - BELT_Y);
+        ctx.fillStyle = '#0d1015'; ctx.fillRect(0, BELT_Y, 120, 30);
+        beltBody(ctx, id, 120);
+        const keep = beltPhase; beltPhase = 12; drawBeltPattern(id); beltPhase = keep;
+      } else {
+        ctx.scale(0.5, 0.5);
+        ctx.translate(0, -78);
+        drawKicker(id, 60, 6, performance.now(), 0);
+        drawKicker(id, 180, 30, performance.now(), 1);
+      }
+    } finally { ctx = main; save.skin[cat] = prev; }
+    return cv;
+  }
+  function renderSkins() {
+    const list = $('skin-list');
+    list.textContent = '';
+    for (const cat of Object.keys(M.SKINS)) {
+      const h = document.createElement('h3');
+      h.textContent = T('sk_' + cat);
+      list.appendChild(h);
+      const row = document.createElement('div');
+      row.className = 'skin-row';
+      for (const s of M.SKINS[cat]) {
+        const owned = M.skinOwned(save, cat, s.id);
+        const on = save.skin[cat] === s.id;
+        const card = document.createElement('div');
+        card.className = 'skin' + (on ? ' on' : '');
+        card.appendChild(skinIcon(cat, s.id));
+        const name = document.createElement('strong');
+        name.textContent = T('sk_' + cat + '_' + s.id);
+        card.appendChild(name);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn small' + (owned && !on ? ' primary' : '');
+        btn.id = `skin-${cat}-${s.id}`;
+        if (on) { btn.textContent = T('skEquipped'); btn.disabled = true; }
+        else if (owned) btn.textContent = T('skEquip');
+        else if (s.level) { btn.textContent = T('skLevel', { n: s.level }); btn.disabled = true; }
+        else { btn.textContent = T('nCoins', { n: s.cost }); btn.disabled = save.coins < s.cost; }
+        btn.addEventListener('click', () => {
+          if (!owned && !M.buySkin(save, cat, s.id)) return;
+          M.equipSkin(save, cat, s.id);
+          persist();
+          Audio.reward(); Haptics.buzz('light');
+          if (cat === 'belt') buildBackground(px);
+          refreshMeta();
+          renderSkins();
+        });
+        card.appendChild(btn);
+        row.appendChild(card);
+      }
+      list.appendChild(row);
+    }
+  }
   $('challenge-chip').addEventListener('click', () => {
     Audio.unlock();
     const ids = L.FACTORIES.map((f) => f.id).concat(['challenge']);
@@ -2440,7 +2756,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     }
   });
   for (const b of document.querySelectorAll('[data-open-shop]')) {
-    b.addEventListener('click', () => { shopReturn = mode === 'over' ? 'over' : 'title'; renderShop(); showPanel('shop'); });
+    b.addEventListener('click', () => { shopReturn = mode === 'over' ? 'over' : 'title'; renderShop(); shopTab('up'); showPanel('shop'); });
   }
   $('shop-back').addEventListener('click', () => { if (shopReturn === 'over') renderOverGoal(); showPanel(shopReturn); });
   $('hud-pause').addEventListener('click', () => pause(true));
@@ -2917,17 +3233,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     if (c.kind === KIND.POWER) { drawPower(c, x, y); ctx.restore(); return; }
     if (c.kind === KIND.GEAR) { drawGearCrate(c, x, y); ctx.restore(); return; }
     const col = c.kind === KIND.GOLD ? C.gold : CRATE_COL[c.kind];
-    roundRect(x, y, CRATE, CRATE, 7);
-    ctx.fillStyle = col;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    // inner frame of the crate
-    roundRect(x + 5, y + 5, CRATE - 10, CRATE - 10, 4);
-    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    const cs = skin('crate');
+    crateBody(cs, col, x, y);
     if (c.kind === KIND.GOLD) {
       // a glint sweeping across gold crates
       const g = (performance.now() / 700 + c.id * 0.3) % 1.6;
@@ -2965,11 +3272,127 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         ctx.fillText('$', c.x, c.y - CRATE / 2 + 2);
       }
     } else {
-      shapeGlyph(SHAPE[c.kind], c.x, c.y - CRATE / 2, 20, 'rgba(255,255,255,0.92)');
+      shapeGlyph(SHAPE[c.kind], c.x, c.y - CRATE / 2, 20, cs === 'neon' ? col : 'rgba(255,255,255,0.92)');
     }
     ctx.restore();
   }
+  // Crate skins. The colour and the shape of every crate stay the same in all of them (colour-blind play).
+  function crateBody(cs, col, x, y) {
+    if (cs === 'neon') {
+      roundRect(x, y, CRATE, CRATE, 8);
+      ctx.fillStyle = '#0d1117';
+      ctx.fill();
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = col; ctx.lineWidth = 8; ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 3; ctx.stroke();
+      return;
+    }
+    roundRect(x, y, CRATE, CRATE, cs === 'gloss' ? 11 : cs === 'wood' ? 4 : 7);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = cs === 'wood' ? 'rgba(60,30,8,0.6)' : 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    if (cs === 'wood') {
+      // painted planks with nails
+      ctx.fillStyle = 'rgba(60,30,8,0.32)';
+      for (const py of [15, 30]) ctx.fillRect(x + 2, y + py, CRATE - 4, 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      for (const py of [4, 19, 34]) ctx.fillRect(x + 3, y + py, CRATE - 6, 1.5);
+      ctx.fillStyle = 'rgba(40,24,10,0.7)';
+      for (const [nx, ny] of [[6, 8], [CRATE - 6, 8], [6, CRATE - 8], [CRATE - 6, CRATE - 8]]) { ctx.beginPath(); ctx.arc(x + nx, y + ny, 1.8, 0, Math.PI * 2); ctx.fill(); }
+    } else if (cs === 'metal') {
+      // brushed plate with a light top edge and rivets
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.fillRect(x + 3, y + 3, CRATE - 6, 7);
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(x + 3, y + CRATE - 9, CRATE - 6, 6);
+      for (const [rx, ry] of [[7, 7], [CRATE - 7, 7], [7, CRATE - 7], [CRATE - 7, CRATE - 7]]) {
+        ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(x + rx + 0.6, y + ry + 0.8, 2.6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(x + rx, y + ry, 2.2, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (cs === 'gloss') {
+      // shiny candy shell
+      ctx.fillStyle = 'rgba(255,255,255,0.32)';
+      ctx.beginPath(); ctx.ellipse(x + CRATE * 0.42, y + 11, CRATE * 0.34, 7, -0.12, 0, Math.PI * 2); ctx.fill();
+      roundRect(x + 4, y + 4, CRATE - 8, CRATE - 8, 8);
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+    } else {
+      // classic: inner frame of the crate
+      roundRect(x + 5, y + 5, CRATE - 10, CRATE - 10, 4);
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
 
+  function beltBody(b, bs, w) {
+    b.fillStyle = bs === 'wood' ? '#7a5434' : bs === 'neon' ? '#0b0f15' : bs === 'rollers' ? '#20262e' : C.steel;
+    b.fillRect(0, BELT_Y + 2, w, 22);
+    if (bs === 'neon') { b.fillStyle = 'rgba(94,224,255,0.75)'; b.fillRect(0, BELT_Y + 2, w, 2); b.fillRect(0, BELT_Y + 22, w, 2); }
+    if (bs === 'wood') { b.fillStyle = 'rgba(255,255,255,0.08)'; b.fillRect(0, BELT_Y + 5, w, 2); b.fillRect(0, BELT_Y + 15, w, 1.5); }
+  }
+  function drawBeltPattern(bs) {
+    const off = beltPhase % 40;
+    if (bs === 'wood') {
+      // slats
+      ctx.fillStyle = 'rgba(40,22,8,0.55)';
+      for (let x = -40 + off; x < W; x += 40) ctx.fillRect(x, BELT_Y + 2, 3, 22);
+      return;
+    }
+    if (bs === 'rollers') {
+      for (let x = -40 + off; x < W; x += 20) {
+        ctx.fillStyle = '#9aa6b2'; ctx.fillRect(x, BELT_Y + 3, 12, 20);
+        ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(x + 2, BELT_Y + 3, 3, 20);
+      }
+      return;
+    }
+    ctx.strokeStyle = bs === 'neon' ? 'rgba(94,224,255,0.9)' : 'rgba(0,0,0,0.45)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let x = -40 + off; x < W; x += 40) {
+      ctx.moveTo(x, BELT_Y + 6);
+      ctx.lineTo(x + 10, BELT_Y + 13);
+      ctx.lineTo(x, BELT_Y + 20);
+    }
+    ctx.stroke();
+  }
+  // Piston skins: housing, rod and pad
+  function drawKicker(ks, x, reach, now, k) {
+    const body = ks === 'chrome' ? '#aab6c3' : ks === 'gold' ? '#d9a521' : C.steel;
+    const top = ks === 'chrome' ? '#e3e9ef' : ks === 'gold' ? '#f6cf55' : C.steelHi;
+    ctx.fillStyle = body;
+    roundRect(x - 34, 92, 68, 66, 8);
+    ctx.fill();
+    ctx.fillStyle = top;
+    ctx.fillRect(x - 34, 92, 68, 8);
+    if (ks === 'chrome' || ks === 'gold') {
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillRect(x - 26, 104, 7, 46);
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
+      ctx.fillRect(x + 20, 104, 8, 46);
+    }
+    if (ks === 'robot') {
+      // two eyes and an antenna with a blinking light
+      ctx.fillStyle = '#0d1117';
+      roundRect(x - 24, 110, 48, 22, 8); ctx.fill();
+      const blink = Math.sin(now / 900 + k * 2) > 0.96 ? 0.15 : 1;
+      ctx.fillStyle = '#5ee0ff';
+      ctx.globalAlpha = blink;
+      ctx.beginPath(); ctx.arc(x - 11, 121, 5, 0, Math.PI * 2); ctx.arc(x + 11, 121, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = C.muted;
+      ctx.fillRect(x - 1.5, 78, 3, 14);
+      ctx.fillStyle = Math.sin(now / 300 + k) > 0 ? '#ff4d5e' : '#7a2430';
+      ctx.beginPath(); ctx.arc(x, 77, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = ks === 'chrome' ? '#e3e9ef' : ks === 'gold' ? '#f6cf55' : C.muted;
+    ctx.fillRect(x - 7, 158, 14, 16 + reach);
+    ctx.fillStyle = ks === 'gold' ? '#7a5300' : C.hazard;
+    roundRect(x - 26, 172 + reach, 52, 18, 4);
+    ctx.fill();
+  }
   // heavy crate: riveted steel with a colour band; after the first kick it is cracked and wobbles
   function drawHeavy(c, x, y) {
     const now = performance.now();
@@ -3219,16 +3642,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       const x = KICKER_X[k];
       const ext = g ? g.kickAnim[k] / 0.16 : 0;
       const reach = Math.sin(Math.min(1, ext) * Math.PI) * 58;
-      ctx.fillStyle = C.steel;
-      roundRect(x - 34, 92, 68, 66, 8);
-      ctx.fill();
-      ctx.fillStyle = C.steelHi;
-      ctx.fillRect(x - 34, 92, 68, 8);
-      ctx.fillStyle = C.muted;
-      ctx.fillRect(x - 7, 158, 14, 16 + reach);
-      ctx.fillStyle = C.hazard;
-      roundRect(x - 26, 172 + reach, 52, 18, 4);
-      ctx.fill();
+      drawKicker(skin('kicker'), x, reach, now, k);
       // window indicator on the belt
       ctx.strokeStyle = hazardA(0.38);
       ctx.setLineDash([6, 6]);
@@ -3241,16 +3655,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     // belt
     const spd = g && mode === 'play' ? (g.tutorial ? (g.tutorial.hold ? 0 : 120) : g.shiftFlash > 0.6 ? 0 : L.speed(g)) : 60;
     beltPhase += spd * dt;
-    // belt rails and rollers are in the pre-drawn background; only the moving chevrons are drawn here
-    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    for (let x = -40 + (beltPhase % 40); x < W; x += 40) {
-      ctx.moveTo(x, BELT_Y + 6);
-      ctx.lineTo(x + 10, BELT_Y + 13);
-      ctx.lineTo(x, BELT_Y + 20);
-    }
-    ctx.stroke();
+    // belt rails and rollers are in the pre-drawn background; only the moving pattern is drawn here
+    drawBeltPattern(skin('belt'));
 
     // crates
     if (g) {
