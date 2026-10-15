@@ -75,7 +75,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
 #stage.portrait .turn-hint { display: block; }
 
 /* title */
-.title-card { width: min(420px, 100%); background: rgba(32, 38, 47, 0.94); }
+.title-card { width: min(460px, 100%); background: rgba(32, 38, 47, 0.94); }
 .tagline { font-size: 17px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chips:not(:has(> :not([hidden]))) { display: none; }
@@ -110,7 +110,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
 .btn.reward { background: #2a3a2f; border: 2px solid var(--crate-green); font-family: var(--body); font-weight: 600; font-size: 19px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
 .btn.reward::before { content: ""; display: inline-block; width: 0; height: 0; margin-right: 8px; border-left: 11px solid var(--crate-green); border-top: 7px solid transparent; border-bottom: 7px solid transparent; vertical-align: 0; }
 .btn.nav { font-family: var(--body); font-weight: 600; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; padding: 11px 6px; white-space: nowrap; }
-.btn.nav .count { margin-left: 4px; }
+.btn.nav .count { margin: 0; }
 .over-nav { gap: 8px; }
 .goal { display: grid; gap: 6px; font-size: 15px; color: var(--muted); }
 .goal.ready { color: var(--hazard); }
@@ -163,7 +163,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   .stat b { font-size: 22px; }
   .stat.big b { font-size: 40px; }
   .upgrade { padding: 8px 12px; }
-  .title-card { width: min(440px, 100%); }
+  .title-card { width: min(470px, 100%); }
   .title-card h1 span { display: inline; }
   .btn.big { font-size: 24px; padding: 12px; }
   #panel-pause .card, .daily-card { width: min(520px, 100%); }
@@ -280,6 +280,14 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   .soon { padding: 6px; font-size: 13px; }
   .xp { font-size: 13px; }
 }
+/* count bubbles on buttons sit on the corner: they never push the label or spill onto the next button */
+#open-missions, #open-missions-over { position: relative; }
+.btn > .count { position: absolute; top: -8px; right: -6px; margin: 0; z-index: 1; box-shadow: 0 0 0 2px var(--panel, #20262f); }
+/* news and update panels */
+#news-list { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--ink); font-size: 17px; text-align: left; }
+#news-list li::marker { color: var(--hazard); }
+.news-ver { margin: -6px 0 0; font-size: 15px; color: var(--muted); }
+@media (orientation: landscape) and (max-height: 400px) { #news-list { font-size: 14px; gap: 2px; } }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 
 /* Halloween logo: a jack-o'-lantern after PANIC and a spider hanging from the title card */
@@ -443,6 +451,26 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
     </div>
   </section>
 
+  <section class="panel" id="panel-news" hidden>
+    <div class="card daily-card">
+      <div class="stripe"></div>
+      <h2 data-i18n="newsTitle"></h2>
+      <p class="news-ver" id="news-ver"></p>
+      <ul id="news-list"></ul>
+      <button type="button" class="btn primary" id="news-ok" data-i18n="newsOk"></button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-update" hidden>
+    <div class="card daily-card">
+      <div class="stripe"></div>
+      <h2 data-i18n="updTitle"></h2>
+      <p data-i18n="updText"></p>
+      <button type="button" class="btn primary" id="upd-now" data-i18n="updNow"></button>
+      <button type="button" class="btn ghost" id="upd-later" data-i18n="updLater"></button>
+    </div>
+  </section>
+
   <section class="panel" id="panel-remind" hidden>
     <div class="card daily-card">
       <div class="stripe"></div>
@@ -549,6 +577,9 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       sk_belt_rubber: 'Rubber', sk_belt_rollers: 'Rollers', sk_belt_wood: 'Wood', sk_belt_neon: 'Neon',
       sk_kicker_steel: 'Industrial', sk_kicker_chrome: 'Chrome', sk_kicker_gold: 'Gold', sk_kicker_robot: 'Robot',
       skEquip: 'Use', skEquipped: 'In use', skLevel: 'Level {n}', skinUnlocked: 'New style unlocked!',
+      newsTitle: "WHAT'S NEW", newsVer: 'Version {v}', newsOk: "Let's play!",
+      newsItems: 'Styles for your crates, belt and pistons (in Upgrades)|Player level with rewards|Gears to keep playing after you lose|Daily challenge and orders during the shift|Share your score and check your ranking|Feedback: tell us what to improve, from Settings',
+      updTitle: 'Update ready', updText: 'A new version of Belt Panic has been downloaded. Restart to use it (it takes a few seconds).', updNow: 'Restart now', updLater: 'Later',
       tutTap: 'Tap here!', tutTapKey: 'Tap here or press {k}',
       tutGold: 'Gold crates fit any bin: +5 points', tutBomb: 'Never kick a bomb. Let it roll away!',
       tutGoldH: 'Pumpkin crates fit any bin: +5 points', themeHalloween: 'Halloween', themeClassic: 'Classic', theme: 'Theme', seasonChip: 'HALLOWEEN EDITION',
@@ -635,6 +666,9 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       sk_belt_rubber: 'Caucho', sk_belt_rollers: 'Rodillos', sk_belt_wood: 'Madera', sk_belt_neon: 'Neón',
       sk_kicker_steel: 'Industrial', sk_kicker_chrome: 'Cromado', sk_kicker_gold: 'Dorado', sk_kicker_robot: 'Robot',
       skEquip: 'Usar', skEquipped: 'En uso', skLevel: 'Nivel {n}', skinUnlocked: '¡Aspecto nuevo desbloqueado!',
+      newsTitle: 'NOVEDADES', newsVer: 'Versión {v}', newsOk: '¡A jugar!',
+      newsItems: 'Aspectos para tus cajas, cinta y pistones (en Mejoras)|Nivel de jugador con premios|Engranes para seguir jugando al perder|Desafío diario y pedidos durante el turno|Comparte tu puntaje y revisa tu clasificación|Comentarios: cuéntanos qué mejorar desde Ajustes',
+      updTitle: 'Actualización lista', updText: 'Se descargó una versión nueva de Belt Panic. Reinicia para usarla (tarda unos segundos).', updNow: 'Reiniciar ahora', updLater: 'Más tarde',
       tutTap: '¡Toca aquí!', tutTapKey: 'Toca aquí o presiona {k}',
       tutGold: 'Las cajas doradas sirven en cualquier contenedor: +5', tutBomb: 'Nunca patees una bomba. ¡Déjala pasar!',
       tutGoldH: 'Las cajas calabaza sirven en cualquier contenedor: +5', themeHalloween: 'Halloween', themeClassic: 'Clásico', theme: 'Tema', seasonChip: 'EDICIÓN HALLOWEEN',
@@ -2376,7 +2410,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
 
   // ------------------------------------------------------------------ menus (DOM)
   const $ = (id) => document.getElementById(id);
-  const panels = ['title', 'over', 'shop', 'pause', 'missions', 'daily', 'settings', 'guide', 'remind', 'ranks'];
+  const panels = ['title', 'over', 'shop', 'pause', 'missions', 'daily', 'settings', 'guide', 'remind', 'ranks', 'news', 'update'];
   function showPanel(name) {
     for (const p of panels) $(`panel-${p}`).hidden = p !== name;
     $('hud-pause').hidden = name !== null;
@@ -2493,6 +2527,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     refreshMeta();
     renderOverGoal();
     setTimeout(() => { if (mode === 'over') showPanel('over'); }, 650);
+    maybeAskReview(newBest);
     // the video ad may finish loading while this screen is open: offer it as soon as it is ready
     clearInterval(offerTimer);
     offerTimer = setInterval(() => { if (mode !== 'over') clearInterval(offerTimer); else refreshOffers(); }, 1000);
@@ -3072,8 +3107,70 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   });
   function showTitle() {
     showPanel('title');
+    if (Updater.offerIfReady()) return;
     checkNewDay(true);
     maybeAskReminders();
+  }
+
+  // ------------------------------------------------------------------ "What's new": once per news set, for players who already played
+  const NEWS_ID = '1.8';
+  function showNewsOrTitle() {
+    if (save.plays === 0) { save.newsSeen = NEWS_ID; persist(); }   // new players start with everything new anyway
+    if (save.newsSeen === NEWS_ID) { showTitle(); return; }
+    $('news-ver').textContent = T('newsVer', { v: window.BELT_VERSION && window.BELT_VERSION !== 'dev' ? window.BELT_VERSION : NEWS_ID });
+    const ul = $('news-list');
+    ul.textContent = '';
+    for (const line of T('newsItems').split('|')) { const li = document.createElement('li'); li.textContent = line; ul.appendChild(li); }
+    showPanel('news');
+  }
+  $('news-ok').addEventListener('click', () => { Audio.unlock(); save.newsSeen = NEWS_ID; persist(); showTitle(); });
+
+  // ------------------------------------------------------------------ Google Play in-app update (flexible: downloads while playing, never forced)
+  const Updater = (function () {
+    const cap = window.Capacitor;
+    const AU = cap && cap.isNativePlatform && cap.isNativePlatform() && cap.Plugins ? cap.Plugins.AppUpdate : null;
+    let ready = false, offered = false;
+    function downloaded() { ready = true; if (mode === 'title' && panelOpen('title')) offerIfReady(); }
+    function offerIfReady() {
+      if (!ready || offered) return false;
+      offered = true;
+      showPanel('update');
+      return true;
+    }
+    async function check() {
+      if (!AU || save.plays === 0) return;
+      const now = Date.now();
+      if (save.updateCheck && now - save.updateCheck < 2 * 86400000) return;   // at most every 2 days
+      save.updateCheck = now;
+      persist();
+      try {
+        const info = await AU.getAppUpdateInfo();
+        if (info.installStatus === 11) { downloaded(); return; }                // already downloaded earlier
+        if (info.updateAvailability !== 2 || !info.flexibleUpdateAllowed) return;
+        AU.addListener('onFlexibleUpdateStateChange', (st) => { if (st.installStatus === 11) downloaded(); });
+        await AU.startFlexibleUpdate();                                         // Google's own dialog
+      } catch (e) { /* not installed from Play, or no network */ }
+    }
+    return {
+      start() { setTimeout(() => { if (mode === 'title') check(); }, 4000); },
+      offerIfReady,
+      restart() { if (AU) AU.completeFlexibleUpdate().catch(() => {}); },
+    };
+  })();
+  $('upd-now').addEventListener('click', () => Updater.restart());
+  $('upd-later').addEventListener('click', () => { showPanel('title'); checkNewDay(true); });
+
+  // ------------------------------------------------------------------ Google Play rating prompt after a good shift (Google decides whether it shows)
+  function maybeAskReview(newBest) {
+    const cap = window.Capacitor;
+    const AR = cap && cap.isNativePlatform && cap.isNativePlatform() && cap.Plugins ? cap.Plugins.AppReview : null;
+    if (!AR || save.plays < 8 || !game || game.tutorial) return;
+    if (!(newBest || game.score >= 80)) return;
+    if ((save.reviewAsks || 0) >= 3 || (save.reviewAt && Date.now() - save.reviewAt < 30 * 86400000)) return;
+    save.reviewAsks = (save.reviewAsks || 0) + 1;
+    save.reviewAt = Date.now();
+    persist();
+    setTimeout(() => { if (mode === 'over') AR.requestReview().catch(() => {}); }, 1500);
   }
 
   // ------------------------------------------------------------------ phone reminders (local notifications, Android app only)
@@ -3911,7 +4008,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   resize();
   I18n.apply();
   refreshMeta();
-  showTitle();
+  showNewsOrTitle();
+  Updater.start();
   Platform.loaded();
   if (NativeAds) NativeAds.ready.then(refreshMeta);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
