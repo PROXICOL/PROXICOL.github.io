@@ -353,6 +353,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
         <div class="setting"><span data-i18n="music"></span><button type="button" class="btn toggle" id="set-music"></button></div>
         <div class="setting"><span data-i18n="vibration"></span><button type="button" class="btn toggle" id="set-vibration"></button></div>
         <div class="setting"><span data-i18n="language"></span><button type="button" class="btn toggle" id="set-language"></button></div>
+        <div class="setting"><span data-i18n="saver"></span><button type="button" class="btn toggle" id="set-saver"></button></div>
         <div class="setting" hidden><span data-i18n="theme"></span><button type="button" class="btn toggle" id="set-theme"></button></div>
       </div>
       <div class="row">
@@ -427,7 +428,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       claim: 'Claim +{n}', claimed: 'Claimed',
       dailyTitle: 'DAILY BONUS', dailyDay: 'Day {n} in a row', dailyText: 'Come back tomorrow and the bonus grows.',
       dailyClaim: 'Claim +{n}', dailyClaim2: 'Claim +{n} (ad)',
-      settingsTitle: 'SETTINGS', sound: 'Sound', music: 'Music', vibration: 'Vibration', language: 'Language',
+      settingsTitle: 'SETTINGS', sound: 'Sound', music: 'Music', vibration: 'Vibration', saver: 'Battery saver', language: 'Language',
       on: 'On', off: 'Off', howTo: 'How to play', privacy: 'Ad privacy options', policy: 'Privacy policy',
       // canvas
       escaped: 'ESCAPED!', wrong: 'WRONG BIN', boom: 'BOOM', combo: 'COMBO x{n}', shift: 'SHIFT CHANGE! NEW BINS',
@@ -490,7 +491,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       claim: 'Cobrar +{n}', claimed: 'Cobrado',
       dailyTitle: 'BONO DIARIO', dailyDay: 'Día {n} seguido', dailyText: 'Vuelve mañana y el bono crece.',
       dailyClaim: 'Cobrar +{n}', dailyClaim2: 'Cobrar +{n} (anuncio)',
-      settingsTitle: 'AJUSTES', sound: 'Sonido', music: 'Música', vibration: 'Vibración', language: 'Idioma',
+      settingsTitle: 'AJUSTES', sound: 'Sonido', music: 'Música', vibration: 'Vibración', saver: 'Ahorro de batería', language: 'Idioma',
       on: 'Sí', off: 'No', howTo: 'Cómo jugar', privacy: 'Privacidad de anuncios', policy: 'Política de privacidad',
       escaped: '¡SE ESCAPÓ!', wrong: '¡EQUIVOCADO!', boom: '¡BUM!', combo: 'COMBO x{n}', shift: '¡CAMBIO DE TURNO! NUEVOS COLORES',
       bestHud: 'RÉCORD {n}', missionDone: '¡MISIÓN COMPLETADA!',
@@ -1539,9 +1540,12 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   let bg = null;                 // pre-drawn floor, grid and belt frame (they never move)
   let px = 1;                    // device pixels per world unit
   let curDpr = 1;
+  let nextDue = 0;               // frame limiter (see frame())
+  let idleFrames = 0;            // frames drawn while nothing moves (menus)
   function resize() {
     const r = stage.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+    // battery saver: lower resolution (and 30 fps, see frame())
+    const dpr = Math.min(window.devicePixelRatio || 1, save.saver ? Math.min(dprCap, 1.25) : dprCap);
     canvas.width = Math.round(r.width * dpr);
     canvas.height = Math.round(r.height * dpr);
     scale = Math.min(r.width / W, r.height / H);
@@ -1552,6 +1556,23 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     px = dpr * scale;
     curDpr = dpr;
     buildBackground(px);
+    idleFrames = 0;
+  }
+  // The static background lives on its own canvas under the game: painted once, never redrawn per frame.
+  const BG_LAYER = false;   // measured: a separate layer costs more than copying the picture (see perf notes)
+  const bgLayer = BG_LAYER ? document.getElementById('bg-layer') : null;
+  function paintBgLayer() {
+    if (!bgLayer) return;
+    bgLayer.width = canvas.width;
+    bgLayer.height = canvas.height;
+    const b = bgLayer.getContext('2d');
+    if (!b) return;
+    b.fillStyle = C.bg;
+    b.fillRect(0, 0, bgLayer.width, bgLayer.height);
+    const bx = Math.round(curDpr * offX), by = Math.round(curDpr * offY);
+    if (bg) { b.imageSmoothingEnabled = false; b.drawImage(bg, bx, by); }
+    else { b.fillStyle = C.floor; b.fillRect(bx, by, Math.round(W * px), Math.round(H * px)); }
+    idleFrames = 0;
   }
   function buildBackground(k) {
     bg = document.createElement('canvas');
@@ -1579,6 +1600,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     b.beginPath();
     for (let x = 20; x < W; x += 64) { b.moveTo(x + 7, BELT_Y + 30); b.arc(x, BELT_Y + 30, 7, 0, Math.PI * 2); }
     b.fill();
+    paintBgLayer();
   }
   // Halloween night: moon, stars and cobwebs (static, part of the cached background)
   function drawNight(b) {
@@ -1695,7 +1717,25 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   }
 
   // a small carved pumpkin; the face glows and flickers
+  const pumpkinSprites = new Map();
   function pumpkin(cx, cy, r, now, seed) {
+    const d = Math.ceil((r * 2 + 12) * px);
+    if (d < 2) { pumpkinBody(cx, cy, r); pumpkinFace(cx, cy, r, now, seed); return; }   // no size yet (first layout)
+    const key = r + '|' + px;
+    let spr = pumpkinSprites.get(key);
+    if (!spr) {
+      spr = document.createElement('canvas');
+      spr.width = spr.height = d;
+      const main = ctx;
+      ctx = spr.getContext('2d');
+      if (ctx) { ctx.scale(px, px); pumpkinBody(r + 6, r + 6, r); }
+      ctx = main;
+      pumpkinSprites.set(key, spr);
+    }
+    ctx.drawImage(spr, cx - r - 6, cy - r - 6, r * 2 + 12, r * 2 + 12);
+    pumpkinFace(cx, cy, r, now, seed);
+  }
+  function pumpkinBody(cx, cy, r) {
     ctx.save();
     ctx.fillStyle = '#3a5a1e';
     ctx.fillRect(cx - 2, cy - r - 5, 4, 7);
@@ -1706,6 +1746,10 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     ctx.strokeStyle = 'rgba(120,40,0,0.45)';
     ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.ellipse(cx, cy, r * 0.32, r * 0.9, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+  function pumpkinFace(cx, cy, r, now, seed) {
+    ctx.save();
     const f = 0.75 + 0.25 * Math.sin(now / 90 + seed * 7) * Math.sin(now / 37 + seed);
     ctx.fillStyle = `rgba(255,214,90,${f})`;
     const e = r * 0.28;
@@ -1762,7 +1806,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     perfSum = 0;
     perfN = 0;
     const i = DPR_STEPS.indexOf(dprCap);
-    if (avg > 25 && i < DPR_STEPS.length - 1 && (window.devicePixelRatio || 1) > DPR_STEPS[i + 1]) {
+    // too slow = well below the frame rate we aim for (60, or 30 in battery saver)
+    if (avg > (save.saver ? 1000 / 30 : 1000 / 60) + 8.3 && i < DPR_STEPS.length - 1 && (window.devicePixelRatio || 1) > DPR_STEPS[i + 1]) {
       dprCap = DPR_STEPS[i + 1];
       save.dprCap = dprCap;
       persist();
@@ -1780,6 +1825,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   let scoreBump = 0;
   let multBump = 0;
   let particles = [];
+  const MAX_PARTICLES = 180;
   let floaters = [];
   let lostHats = [];
   let pressFlash = [0, 0, 0];
@@ -1827,6 +1873,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       const a = Math.random() * Math.PI * 2;
       const v = spd * (0.4 + Math.random() * 0.8);
       particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 120, life: 0.6 + Math.random() * 0.4, col, s: 3 + Math.random() * 4 });
+      if (particles.length > MAX_PARTICLES) particles.shift();
     }
   }
   function floatText(x, y, text, col, size = 26, life = 0.9) { floaters.push({ x, y, text, col, size, life, max: life }); }
@@ -1984,6 +2031,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     tog('set-sound', !save.muted);
     tog('set-music', save.music);
     tog('set-vibration', save.haptics);
+    tog('set-saver', !!save.saver);
     $('set-vibration').parentElement.hidden = !Haptics.available;
     tog('set-language', true, I18n.LANGS[I18n.lang]);
     $('set-privacy').hidden = !Platform.privacyRequired;
@@ -2162,6 +2210,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   $('set-sound').addEventListener('click', () => { Audio.unlock(); Audio.setMuted(!save.muted); refreshMeta(); Audio.good(3); });
   $('set-music').addEventListener('click', () => { Audio.unlock(); Audio.setMusic(!save.music); refreshMeta(); });
   $('set-vibration').addEventListener('click', () => { save.haptics = !save.haptics; persist(); refreshMeta(); Haptics.buzz('medium'); });
+  $('set-saver').addEventListener('click', () => { save.saver = !save.saver; persist(); resize(); refreshMeta(); });
   $('set-language').addEventListener('click', () => {
     const codes = Object.keys(I18n.LANGS);
     save.lang = codes[(codes.indexOf(I18n.lang) + 1) % codes.length];
@@ -2716,17 +2765,25 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const cw = canvas.width;
     const ch = canvas.height;
-    const bx = Math.round(curDpr * offX + sx * px);
-    const by = Math.round(curDpr * offY + sy * px);
-    const bw = bg ? bg.width : Math.round(W * px);
-    const bh = bg ? bg.height : Math.round(H * px);
-    ctx.fillStyle = C.bg;
-    if (by > 0) ctx.fillRect(0, 0, cw, by);
-    if (by + bh < ch) ctx.fillRect(0, by + bh, cw, ch - by - bh);
-    if (bx > 0) ctx.fillRect(0, by, bx, bh);
-    if (bx + bw < cw) ctx.fillRect(bx + bw, by, cw - bx - bw, bh);
-    if (bg) { ctx.imageSmoothingEnabled = false; ctx.drawImage(bg, bx, by); ctx.imageSmoothingEnabled = true; }
-    else { ctx.fillStyle = C.floor; ctx.fillRect(bx, by, bw, bh); }
+    if (bgLayer) {
+      ctx.clearRect(0, 0, cw, ch);
+      // the background layer shakes with the scene (a CSS transform: no repaint)
+      const shakeCss = sx || sy ? `translate(${(sx * scale).toFixed(1)}px,${(sy * scale).toFixed(1)}px)` : '';
+      if (bgLayer.style.transform !== shakeCss) bgLayer.style.transform = shakeCss;
+    } else {
+      // pre-drawn background copied 1:1 in device pixels, only the strips around it painted
+      const bx = Math.round(curDpr * offX + sx * px);
+      const by = Math.round(curDpr * offY + sy * px);
+      const bw = bg ? bg.width : Math.round(W * px);
+      const bh = bg ? bg.height : Math.round(H * px);
+      ctx.fillStyle = C.bg;
+      if (by > 0) ctx.fillRect(0, 0, cw, by);
+      if (by + bh < ch) ctx.fillRect(0, by + bh, cw, ch - by - bh);
+      if (bx > 0) ctx.fillRect(0, by, bx, bh);
+      if (bx + bw < cw) ctx.fillRect(bx + bw, by, cw - bx - bw, bh);
+      if (bg) { ctx.imageSmoothingEnabled = false; ctx.drawImage(bg, bx, by); ctx.imageSmoothingEnabled = true; }
+      else { ctx.fillStyle = C.floor; ctx.fillRect(bx, by, bw, bh); }
+    }
     ctx.restore();
     ctx.save();
     if (shake > 0) ctx.translate(sx, sy);
@@ -2829,12 +2886,25 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     if (g && g.tutorial && mode === 'play') drawTutorial(g, now);
 
     // particles & floating text
-    for (const p of particles) {
-      ctx.globalAlpha = Math.max(0, Math.min(1, p.life * 1.5));
-      ctx.fillStyle = p.col;
-      ctx.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s);
+    // particles: one fill per colour and fade level instead of one per particle
+    if (particles.length) {
+      const groups = new Map();
+      for (const p of particles) {
+        const q = Math.min(4, Math.ceil(p.life * 6));   // 4 fade levels
+        const key = p.col + q;
+        let grp = groups.get(key);
+        if (!grp) { grp = { col: p.col, a: q / 4, list: [] }; groups.set(key, grp); }
+        grp.list.push(p);
+      }
+      for (const grp of groups.values()) {
+        ctx.globalAlpha = grp.a;
+        ctx.fillStyle = grp.col;
+        ctx.beginPath();
+        for (const p of grp.list) ctx.rect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
     }
-    ctx.globalAlpha = 1;
     for (const f of floaters) {
       ctx.globalAlpha = Math.max(0, Math.min(1, f.life * 2));
       const pop = 1 + Math.max(0, f.life - f.max + 0.12) * 3;   // quick pop when it appears
@@ -2965,6 +3035,15 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
 
   // ------------------------------------------------------------------ loop
   function frame(now) {
+    requestAnimationFrame(frame);
+    // 90/120 Hz screens would draw up to twice as often: cap at 60 fps (30 behind the title menu)
+    const interval = mode === 'title' || save.saver ? 1000 / 30 : 1000 / 60;
+    if (now < nextDue - 1.5) return;
+    nextDue = Math.max(nextDue + interval, now);
+    // menus over a finished or paused shift: once the effects settle, stop redrawing a still picture
+    const animating = mode === 'play' || mode === 'title' || particles.length || floaters.length || lostHats.length || shake > 0 || hurt > 0;
+    idleFrames = animating ? 0 : idleFrames + 1;
+    if (idleFrames > 2) { lastT = now; return; }
     watchPerformance(now - lastT);
     const dt = Math.min(0.05, (now - lastT) / 1000);
     lastT = now;
@@ -2988,7 +3067,6 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     lostHats = lostHats.filter((h) => h.t > 0);
     if (mode === 'title' && !game) demoTick(dt);
     draw(mode === 'play' || mode === 'title' ? dt : 0);
-    requestAnimationFrame(frame);
   }
 
   // attract mode: a self-playing belt behind the title screen
