@@ -362,6 +362,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       ach_heavy: 'Break {n} heavy crates', ach_powers: 'Use {n} power-ups', ach_runs: 'Play {n} shifts', ach_factories: 'Own {n} factories', ach_streak: 'Play {n} days in a row',
       pw_slow: 'SLOW MOTION', pw_shield: 'SHIELD', pw_double: 'DOUBLE POINTS', shieldSaved: 'SHIELD SAVED YOU!',
       introHeavy: 'Heavy crate! Kick it twice', introMystery: 'Mystery crate: its colour shows at the last moment', introPower: 'Power-up! Kick it into any bin',
+      introShift: 'Crates with ✓ can pass for free, or go to their old bin', freePass: 'FREE PASS',
       up_luck: 'Lucky Charm', up_luck_d: 'More gold crates and power-ups', up_powerTime: 'Battery', up_powerTime_d: 'Power-ups last 25% longer',
       up_coinBonus: 'Piggy Bank', up_coinBonus_d: '+10% coins per shift',
       up_collector: 'Hat Collector', up_collector_d: 'Earn a hard hat every {n} crates of each colour',
@@ -409,6 +410,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       ach_heavy: 'Rompe {n} cajas pesadas', ach_powers: 'Usa {n} potenciadores', ach_runs: 'Juega {n} turnos', ach_factories: 'Ten {n} fábricas', ach_streak: 'Juega {n} días seguidos',
       pw_slow: 'CÁMARA LENTA', pw_shield: 'ESCUDO', pw_double: 'PUNTOS DOBLES', shieldSaved: '¡EL ESCUDO TE SALVÓ!',
       introHeavy: '¡Caja pesada! Patéala dos veces', introMystery: 'Caja misteriosa: su color aparece a último momento', introPower: '¡Potenciador! Patéalo a cualquier contenedor',
+      introShift: 'Las cajas con ✓ pueden pasar gratis o ir a su contenedor anterior', freePass: 'SIN CASTIGO',
       up_luck: 'Amuleto', up_luck_d: 'Más cajas doradas y potenciadores', up_powerTime: 'Batería', up_powerTime_d: 'Los potenciadores duran 25% más',
       up_coinBonus: 'Alcancía', up_coinBonus_d: '+10% de monedas por turno',
       up_collector: 'Recolector de cascos', up_collector_d: 'Gana un casco cada {n} cajas de cada color',
@@ -651,9 +653,11 @@ function addScore(g, pts, x) {
   if (g.score >= g.nextShift) {
     g.nextShift += 30;
     // shift change: every bin gets a different colour (a derangement of 3)
+    g.prevBins = g.bins;
     g.bins = g.rand() < 0.5 ? [g.bins[1], g.bins[2], g.bins[0]] : [g.bins[2], g.bins[0], g.bins[1]];
     g.shiftFlash = 1.6;
-    // crates already on the belt were sorted for the old layout: they may leave without penalty
+    // crates already on the belt were planned for the old layout: they may leave without penalty,
+    // and a kick into either the old or the new bin of their colour counts as correct
     for (const c of g.crates) if (!c.falling) c.grace = true;
     emit(g, 'shift', { bins: g.bins.slice() });
   }
@@ -712,8 +716,9 @@ function update(g, dt) {
           g.bombsDodged += 1;
           addScore(g, 1, W - 30);
           if (g.tutorial) tutorialAdvance(g);
-        } else if (c.kind !== KIND.GOLD && c.kind !== KIND.POWER && !c.grace) {
-          loseLife(g, 'escaped', W - 30, crateColor(c));
+        } else if (c.kind !== KIND.GOLD && c.kind !== KIND.POWER) {
+          if (c.grace) emit(g, 'freePass', { x: W - 60 });
+          else loseLife(g, 'escaped', W - 30, crateColor(c));
         }
         continue;
       }
@@ -742,7 +747,7 @@ function resolveDrop(g, c) {
     else g.shield = true;
     g.powersUsed += 1;
     emit(g, 'power', { power: c.power, x: KICKER_X[c.bin] });
-  } else if (crateColor(c) === bin) {
+  } else if (crateColor(c) === bin || crateColor(c) === c.altColor) {
     const heavy = c.kind === KIND.HEAVY;
     g.combo += 1;
     g.sorted += 1;
@@ -801,6 +806,7 @@ function kick(g, k) {
   best.falling = true;
   best.bin = k;
   best.binColor = g.bins[k];
+  best.altColor = best.grace && g.prevBins ? g.prevBins[k] : -1;   // old layout, for crates caught by a shift change
   best.vy = 380;
   best.x = KICKER_X[k];
   emit(g, 'kick', { k, kind: best.kind });
@@ -1535,6 +1541,15 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     b.stroke();
     b.restore();
   }
+  // check badge on crates caught by a shift change: they can pass for free or go to their old bin
+  function graceBadge(c) {
+    const bx = c.x + CRATE / 2 - 4, by = c.y - CRATE + 2;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(bx, by, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#1f9d55'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(bx - 5, by); ctx.lineTo(bx - 1.5, by + 4); ctx.lineTo(bx + 5.5, by - 4); ctx.stroke();
+    ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
+  }
   // small hard-hat icon (HUD)
   function hardHat(cx, cy, r, col, alpha) {
     ctx.globalAlpha = alpha;
@@ -1758,7 +1773,16 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
           lostHats.push({ i: game.lives, t: 0.7 });
           floatText(e.x, 220, e.reason === 'escaped' ? T('escaped') : e.reason === 'wrong' ? T('wrong') : T('boom'), C.red, 30);
           break;
-        case 'shift': Audio.shift(); Haptics.buzz('medium'); break;
+        case 'shift':
+          Audio.shift(); Haptics.buzz('medium');
+          if ((save.seen.introShift || 0) < 2 && game.crates.some((c) => c.grace && c.kind !== KIND.BOMB)) {
+            save.seen.introShift = (save.seen.introShift || 0) + 1;
+            persist();
+            introText = T('introShift');
+            introT = 4.5;
+          }
+          break;
+        case 'freePass': floatText(W - 140, 236, T('freePass'), C.muted, 22); break;
         case 'whiff': Audio.whiff(); break;
         case 'dent': Audio.clang(); Haptics.buzz('medium'); burst(e.x, 250, '#c9d1da', 10, 220); shake = Math.max(shake, 0.12); break;
         case 'reveal': Audio.whiff(); break;
@@ -2628,7 +2652,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
 
     // crates
     if (g) {
-      for (const c of g.crates) if (!c.falling) drawCrate(c);
+      for (const c of g.crates) if (!c.falling) { drawCrate(c); if (c.grace && c.kind !== KIND.BOMB) graceBadge(c); }
       for (const c of g.crates) if (c.falling) drawCrate(c);
     }
     // entry door and exit chute, drawn over the crates so they come out of and go into the wall
@@ -2745,16 +2769,17 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     if (g && g.shiftFlash > 0) {
       const a = Math.min(1, g.shiftFlash * 2);
       ctx.globalAlpha = a;
-      hazardStripe(0, 200, W, 44, now / 8);
+      // between the belt and the bins, so the crates on the belt stay visible during the change
+      hazardStripe(0, 288, W, 42, now / 8);
       const text = T('shift');
-      fitFont(text, DISPLAY, 26, W - 140);
+      fitFont(text, DISPLAY, 24, W - 140);
       const tw = ctx.measureText(text).width + 40;
       ctx.fillStyle = '#16181c';
-      ctx.fillRect(W / 2 - tw / 2, 204, tw, 36);
+      ctx.fillRect(W / 2 - tw / 2, 291, tw, 36);
       ctx.fillStyle = C.hazard;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(text, W / 2, 223);
+      ctx.fillText(text, W / 2, 310);
       ctx.globalAlpha = 1;
     }
     if (g && g.slowT > 0 && mode === 'play') {
