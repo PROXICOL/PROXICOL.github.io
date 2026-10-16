@@ -943,15 +943,18 @@ function tutorialRetry(g, reason, x) {
   emit(g, 'tutorialRetry', { reason, x });
 }
 
+// Belt speed (1.9.3, a little easier than before: 150 px/s start, 1 + s/230, no cap):
+// starts at 130 px/s, grows until 400 points (347 px/s) and never passes MAX_SPEED in any factory or event.
+const START_SPEED = 130, SPEED_RAMP = 240, SPEED_TOP_SCORE = 400, MAX_SPEED = 480;
 function speed(g) {
-  const s = Math.min(g.score, 400);
+  const s = Math.min(g.score, SPEED_TOP_SCORE);
   const f = g.factory ? g.factory.speed : 1;
   const wave = g.factory && g.factory.waves ? 1 + 0.32 * Math.sin((g.t * Math.PI * 2) / 6) : 1;   // Port: 6-second waves
-  return 150 * g.speedMul * f * wave * (1 + s / 230) * (g.slowT > 0 ? 0.6 : 1);
+  return Math.min(MAX_SPEED, START_SPEED * g.speedMul * f * wave * (1 + s / SPEED_RAMP)) * (g.slowT > 0 ? 0.6 : 1);
 }
 
 function spawnGap(g) {
-  return Math.max(0.42, 1.25 - g.score * 0.0045) * (0.85 + g.rand() * 0.5);
+  return Math.max(0.47, 1.25 - g.score * 0.004) * (0.85 + g.rand() * 0.5);   // was 0.42 and 0.0045
 }
 
 /** Next crate on the belt. New kinds join as the score climbs (thresholds depend on the factory). */
@@ -1292,7 +1295,7 @@ const UPGRADES = [
   { id: 'helmets', max: 3, cost: [250, 500, 900] },
 ];
 
-const API = { EVENT_MODS, GEAR_AT, MAX_CONTINUES, ORDER_TIME, continueCost, W, BELT_Y, KICKER_X, CRATE, KIND, POWERS, REVEAL_X, FACTORIES, factoryById, UPGRADES, TUTORIAL_STEPS, tutorialTarget, crateColor, createGame, update, kick, revive, speed, coinsFor, mult };
+const API = { START_SPEED, MAX_SPEED, EVENT_MODS, GEAR_AT, MAX_CONTINUES, ORDER_TIME, continueCost, W, BELT_Y, KICKER_X, CRATE, KIND, POWERS, REVEAL_X, FACTORIES, factoryById, UPGRADES, TUTORIAL_STEPS, tutorialTarget, crateColor, createGame, update, kick, revive, speed, coinsFor, mult };
 if (typeof module !== 'undefined') module.exports = API;
 if (typeof window !== 'undefined') window.BeltLogic = API;
 </script><script>// Belt Panic — daily missions, daily streak and run rewards. Pure functions over the save data,
@@ -2402,6 +2405,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   function drawDarkness(now) {
     const key = px + '|' + W;
     if (darkKey !== key) {
+      if (!(Math.ceil(W * px) >= 1)) return;   // screen not sized yet
       darkKey = key;
       darkSprite = document.createElement('canvas');
       darkSprite.width = Math.ceil(W * px); darkSprite.height = Math.ceil(110 * px);
@@ -3861,8 +3865,10 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     }
   }
   function doorSprite(fn) {
+    const w = Math.ceil(DWS * px), h = Math.ceil(DH * px);
+    if (!(w >= 1 && h >= 1)) return null;   // screen not sized yet (app opening): try again next frame
     const cv = document.createElement('canvas');
-    cv.width = Math.ceil(DWS * px); cv.height = Math.ceil(DH * px);
+    cv.width = w; cv.height = h;
     const c2 = cv.getContext('2d');
     if (!c2) return null;
     const main = ctx;
@@ -3884,7 +3890,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     const kind = doorKind();
     const key = kind + '|' + px + '|' + theme;
     if (doorCache.key !== key) {
-      doorCache = { key, a: doorSprite(() => doorStatic(kind, 'a')), b: kind === 'airlock' ? doorSprite(() => doorStatic(kind, 'b')) : null };
+      const a = doorSprite(() => doorStatic(kind, 'a'));
+      doorCache = { key: a ? key : '', a, b: a && kind === 'airlock' ? doorSprite(() => doorStatic(kind, 'b')) : null };
     }
     const xs = doorCrates(exit), near = xs.some((x) => x < DW + 30);
     const top = DOOR_TOP - 24;
