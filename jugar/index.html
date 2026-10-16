@@ -464,6 +464,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       </div>
       <div class="row">
         <button type="button" class="btn" id="set-howto"><span data-i18n="howTo"></span><b class="new-tag" id="howto-new" data-i18n="newTag" hidden></b></button>
+        <button type="button" class="btn" id="set-testmode" hidden></button>
         <button type="button" class="btn ghost" id="set-privacy" data-i18n="privacy" hidden></button>
         <a class="btn ghost link" id="set-policy" href="https://proxicol.github.io/privacy.html" target="_blank" rel="noopener" data-i18n="policy"></a>
       </div>
@@ -534,7 +535,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   </section>
 </div>
 
-<script>window.BELT_VERSION="1.9.2";</script><script>// Belt Panic — text in English and Spanish. The phone's language picks one; Settings can change it.
+<script>window.BELT_VERSION="1.9.3";</script><script>// Belt Panic — text in English and Spanish. The phone's language picks one; Settings can change it.
 (function () {
   'use strict';
   const STR = {
@@ -595,6 +596,9 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       dailyTitle: 'DAILY BONUS', dailyDay: 'Day {n} in a row', dailyText: 'Come back tomorrow and the bonus grows.',
       dailyClaim: 'Claim +{n}', dailyClaim2: 'Claim +{n} (ad)',
       settingsTitle: 'SETTINGS', sound: 'Sound', music: 'Music', vibration: 'Vibration', saver: 'Battery saver', language: 'Language',
+      testMode: 'Test mode', testModeAsk: 'Test mode: a separate game with everything unlocked to try every feature. Your real progress is kept and comes back when you leave test mode. Turn it on?',
+      testExitAsk: 'Leave test mode and go back to your real progress?', testExit: 'Exit test mode', testEv: 'Ev: {e}', testAuto: 'auto', testUpMax: 'Upg: max', testUpZero: 'Upg: 0',
+      evShort_bombs: 'bombs', evShort_gold: 'gold', evShort_speed: 'turbo', evShort_orders: 'orders', evShort_mystery: 'mystery', evShort_gears: 'gears',
       on: 'On', off: 'Off', howTo: 'How to play', privacy: 'Ad privacy options', policy: 'Privacy policy',
       // canvas
       escaped: 'ESCAPED!', wrong: 'WRONG BIN', boom: 'BOOM', combo: 'COMBO x{n}', shift: 'SHIFT CHANGE! NEW BINS',
@@ -704,6 +708,9 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       dailyTitle: 'BONO DIARIO', dailyDay: 'Día {n} seguido', dailyText: 'Vuelve mañana y el bono crece.',
       dailyClaim: 'Cobrar +{n}', dailyClaim2: 'Cobrar +{n} (anuncio)',
       settingsTitle: 'AJUSTES', sound: 'Sonido', music: 'Música', vibration: 'Vibración', saver: 'Ahorro de batería', language: 'Idioma',
+      testMode: 'Modo prueba', testModeAsk: 'Modo prueba: una partida aparte con todo desbloqueado para probar todas las funciones. Tu progreso real queda guardado y vuelve al salir del modo prueba. ¿Activarlo?',
+      testExitAsk: '¿Salir del modo prueba y volver a tu progreso real?', testExit: 'Salir de prueba', testEv: 'Ev: {e}', testAuto: 'auto', testUpMax: 'Mej: máx', testUpZero: 'Mej: 0',
+      evShort_bombs: 'bombas', evShort_gold: 'oro', evShort_speed: 'turbo', evShort_orders: 'pedidos', evShort_mystery: 'misterio', evShort_gears: 'engranes',
       on: 'Sí', off: 'No', howTo: 'Cómo jugar', privacy: 'Privacidad de anuncios', policy: 'Política de privacidad',
       escaped: '¡SE ESCAPÓ!', wrong: '¡EQUIVOCADO!', boom: '¡BUM!', combo: 'COMBO x{n}', shift: '¡CAMBIO DE TURNO! NUEVOS COLORES',
       bestHud: 'RÉCORD {n}', missionDone: '¡MISIÓN COMPLETADA!',
@@ -1787,7 +1794,12 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   const FINE_POINTER = !!(window.matchMedia && window.matchMedia('(pointer: fine)').matches);
 
   // ------------------------------------------------------------------ save data
-  const SAVE_KEY = 'beltpanic.v1';
+  // Closed-test builds (BELT_TESTERS) have a "test mode" in Settings: a separate save with everything open.
+  // The real progress stays under the normal key and comes back when the tester leaves test mode.
+  const TESTERS = !!window.BELT_TESTERS && !window.BELT_PRUEBAS;
+  let testMode = false;
+  try { testMode = TESTERS && localStorage.getItem('beltpanic.mode') === 'test'; } catch (e) { /* storage blocked */ }
+  const SAVE_KEY = testMode ? 'beltpanic.test' : 'beltpanic.v1';
   const save = { best: 0, coins: 0, upgrades: {}, muted: false, music: true, haptics: true, lang: null, tutorialDone: false, plays: 0, daily: null, streak: null, factory: 'classic', seen: {} };
   let loaded = {};
   try { loaded = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}') || {}; } catch (e) { /* storage blocked */ }
@@ -1798,7 +1810,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   M.ensureSkins(save);
   M.ensureLevel(save);
   // test build (separate "Belt Panic PRUEBAS" app): everything unlocked, plenty of coins and gears, test options in Settings
-  const PRUEBAS = !!window.BELT_PRUEBAS;
+  const PRUEBAS = !!window.BELT_PRUEBAS || testMode;
   if (PRUEBAS) {
     save.tutorialDone = true;
     save.factories = L.FACTORIES.map((f) => f.id);
@@ -3060,7 +3072,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     const ua = navigator.userAgent;
     const m = ua.match(/Android [\d.]+; ([^;)]+)/);
     const phone = m ? m[1].replace(/\s*Build\/.*$/, '').trim() : (ua.includes('iPhone') ? 'iPhone' : 'web');   // e.g. SM-S918B
-    const url = FEEDBACK_URL.replace('VERSION', encodeURIComponent(window.BELT_VERSION || 'dev')).replace('TELEFONO', encodeURIComponent(phone));
+    const url = FEEDBACK_URL.replace('VERSION', encodeURIComponent((window.BELT_VERSION || 'dev') + (PRUEBAS ? ' prueba' : ''))).replace('TELEFONO', encodeURIComponent(phone));
     window.open(url, '_blank');
   });
   // ---- shop tabs: upgrades | styles
@@ -3336,11 +3348,19 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   const TEST_EVENTS = [null].concat(M.EVENTS);
   function refreshTest() {
     $('test-row').hidden = !PRUEBAS;
+    $('set-testmode').hidden = !TESTERS;
+    $('set-testmode').textContent = T(testMode ? 'testExit' : 'testMode');
     if (!PRUEBAS) return;
-    $('set-test-event').textContent = 'Ev: ' + ({ bombs: 'bombas', gold: 'oro', speed: 'turbo', orders: 'pedidos', mystery: 'misterio', gears: 'engranes' }[save.testEvent] || 'auto');
+    $('set-test-event').textContent = T('testEv', { e: save.testEvent ? T('evShort_' + save.testEvent) : T('testAuto') });
     const maxed = L.UPGRADES.every((u) => (save.upgrades[u.id] || 0) >= u.max);
-    $('set-test-up').textContent = maxed ? 'Mej: máx' : 'Mej: 0';
+    $('set-test-up').textContent = T(maxed ? 'testUpMax' : 'testUpZero');
   }
+  function switchTestMode(on) {
+    persist();
+    try { if (on) localStorage.setItem('beltpanic.mode', 'test'); else localStorage.removeItem('beltpanic.mode'); } catch (e) { return; }
+    location.reload();
+  }
+  $('set-testmode').addEventListener('click', () => { if (window.confirm(T(testMode ? 'testExitAsk' : 'testModeAsk'))) switchTestMode(!testMode); });
   $('set-test-event').addEventListener('click', () => {
     save.testEvent = TEST_EVENTS[(TEST_EVENTS.indexOf(save.testEvent || null) + 1) % TEST_EVENTS.length];
     window.BELT_EVENT = save.testEvent || null;
