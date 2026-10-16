@@ -18,6 +18,9 @@
   color-scheme: dark;
 }
 :root.f-frozen { --bg: #0b131b; --floor: #142230; --panel: #172738; --steel: #3a5166; --steel-hi: #5b7890; --hazard: #64d4ff; --gold: #ffe07a; --muted: #93a9bb; }
+:root.f-port { --bg: #071723; --floor: #2b2119; --panel: #132733; --steel: #36505f; --steel-hi: #56768a; --hazard: #ffb020; --gold: #ffd25a; --muted: #9db0bc; }
+:root.f-lab { --bg: #0c0f1c; --floor: #141a2b; --panel: #191f35; --steel: #343e5e; --steel-hi: #56638f; --hazard: #b48cff; --gold: #ffe07a; --muted: #a3a9c6; }
+:root.f-mine { --bg: #0b0907; --floor: #1b1611; --panel: #211b15; --steel: #463b30; --steel-hi: #66574a; --hazard: #ffb347; --gold: #ffd166; --muted: #b0a493; }
 :root.f-candy { --bg: #1a0e1d; --floor: #26152c; --panel: #2c1833; --steel: #583a64; --steel-hi: #7b548e; --hazard: #ff5fa2; --gold: #ffd34d; --muted: #b9a0c4; --stripe: #fff1f7; }
 :root.halloween { --bg: #110d17; --floor: #1b1524; --panel: #231c2e; --steel: #3c3349; --steel-hi: #5b4e6c; --hazard: #ff7a1a; --gold: #ff9a2e; --muted: #a197b0; }
 html, body { height: 100%; }
@@ -298,6 +301,24 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
 #news-list li::marker { color: var(--hazard); }
 .news-ver { margin: -6px 0 0; font-size: 15px; color: var(--muted); }
 @media (orientation: landscape) and (max-height: 400px) { #news-list { font-size: 14px; gap: 2px; } }
+/* weekly event: chip on the title, goal row in Missions */
+.event-chip { border: 0; background: var(--gold); color: #16181c; font-family: var(--display); font-size: 13px; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+#week-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; background: var(--floor); border: 2px solid var(--gold); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+#week-row strong { font-family: var(--display); font-weight: 400; font-size: 15px; color: var(--gold); }
+#week-row span { font-size: 15px; color: var(--ink); }
+#week-row .m-prog { grid-column: 1; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); }
+#week-row .btn { grid-column: 2; grid-row: 1 / span 3; }
+#ranks-list .stat b i { font-family: var(--body, inherit); font-style: normal; font-size: 0.7em; color: var(--gold); letter-spacing: 1px; margin-left: 6px; vertical-align: 2px; }
+@media (orientation: landscape) and (max-height: 400px) {
+  .event-chip { font-size: 11px; padding: 3px 8px; white-space: nowrap; }
+  #week-row { grid-template-columns: auto 1fr auto; padding: 4px 10px; margin-bottom: 4px; gap: 10px; }
+  #week-row strong { display: none; }
+  #week-row > span { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #week-row > span { grid-column: 1; grid-row: 1; }
+  #week-row .m-prog { grid-column: 2; grid-row: 1; min-width: 90px; }
+  #week-row .btn { grid-column: 3; grid-row: 1; padding: 5px 10px; font-size: 13px; }
+  #ranks-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 
 /* Halloween logo: a jack-o'-lantern after PANIC and a spider hanging from the title card */
@@ -318,7 +339,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       <div class="stripe"></div>
       <h1>BELT <span>PANIC</span></h1>
       <p class="tagline" data-i18n="tagline"></p>
-      <div class="chips"><span class="season-chip" id="season-chip" data-i18n="seasonChip" hidden></span><span class="streak-chip" id="streak-chip" hidden></span><button type="button" class="challenge-chip" id="challenge-chip" data-i18n="challengeChip" hidden></button></div>
+      <div class="chips"><span class="season-chip" id="season-chip" data-i18n="seasonChip" hidden></span><span class="streak-chip" id="streak-chip" hidden></span><button type="button" class="challenge-chip" id="challenge-chip" data-i18n="challengeChip" hidden></button><button type="button" class="event-chip" id="event-chip" hidden></button></div>
       <div class="factory-pick">
         <button type="button" class="btn ghost arrow" id="fac-prev" data-i18n-label="prevFactory">&#8249;</button>
         <div class="fac-text"><b id="fac-name"></b><span id="fac-info"></span></div>
@@ -395,6 +416,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       </div>
       <div id="sec-missions">
         <p data-i18n="missionsText"></p>
+        <div id="week-row" hidden><strong id="week-name"></strong><span id="week-goal"></span><div class="m-prog"><i class="bar"><i id="week-bar"></i></i><span id="week-num"></span></div><button type="button" class="btn small" id="week-claim"></button></div>
         <div id="mission-list"></div>
       </div>
       <div id="sec-ach" hidden><div id="ach-list"></div></div>
@@ -506,6 +528,25 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   'use strict';
   const STR = {
     en: {
+      fac_port: 'Harbor', fac_lab: 'Laboratory', fac_mine: 'Mine',
+      intro_port: 'Harbor: the belt speeds up and slows down like the waves. Coins x1.8',
+      intro_lab: 'Laboratory: every crate is a mystery and some change color once. Coins x2',
+      intro_mine: 'Mine: it is dark! You only see crates under the piston lamps. Coins x2.2',
+      flipTxt: 'SWITCH!',
+      ev_bombs: 'Bomb week', ev_bombs_d: 'twice the bombs, twice the coins',
+      ev_gold: 'Gold rush', ev_gold_d: 'three times the gold, each one worth 15',
+      ev_speed: 'Turbo week', ev_speed_d: 'belt 20% faster, XP x1.5',
+      ev_orders: 'Order frenzy', ev_orders_d: 'orders every 4 s, pay x2',
+      ev_mystery: 'Mystery week', ev_mystery_d: 'mystery crates from the start, coins x1.5',
+      ev_gears: 'Gear week', ev_gears_d: 'three times the gear crates',
+      evChip: '★ {name}', weekTitle: '{goal} · {d} days left', weekClaim: '+{c} · +{g} gears', weekDone: 'WEEKLY GOAL DONE!',
+      wg_dodge: 'Dodge {n} bombs this week', wg_gold: 'Catch {n} gold crates this week', wg_sorted: 'Sort {n} crates this week',
+      wg_orders: 'Complete {n} orders this week', wg_mystery: 'Reveal {n} mystery crates this week', wg_gears: 'Catch {n} gear crates this week',
+      starNew: '★ NEW STAR! +{n}', newFacStars: 'NEW FACTORY: {name}!',
+      facStars: 'Needs {need} ★ (you have {have})', needStars: '{n} more ★', facInfoStar: 'Best {best} · {stars} · next: {goal}',
+      sg_score: '{n} points', sg_combo: 'combo {n}', sg_orders: '{n} orders', sg_mystery: '{n} mysteries', sg_gold: '{n} gold', sg_sorted: '{n} crates',
+      g_events: 'Weekly event', g_events_d: 'Each week (Monday to Sunday) has a special rule for everyone, plus a weekly goal that pays 300 coins and 2 Gears. Not in the daily challenge.',
+      g_stars: 'Factory stars', g_stars_d: 'Each factory has 3 stars (100 coins each). Stars open the Harbor (4), the Laboratory (7) and the Mine (10).',
       fac_classic: 'Classic Factory', fac_frozen: 'Frozen Warehouse', fac_candy: 'Candy Factory',
       facInfo: 'Best {best} · coins x{mult}', facLocked: 'Locked · {cost} coins', unlock: 'Unlock · {cost}', needCoins: 'Need {n} more coins',
       prevFactory: 'Previous factory', nextFactory: 'Next factory', newFactory: 'NEW FACTORY!',
@@ -588,7 +629,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       sk_kicker_steel: 'Industrial', sk_kicker_chrome: 'Chrome', sk_kicker_gold: 'Gold', sk_kicker_robot: 'Robot',
       skEquip: 'Use', skEquipped: 'In use', skLevel: 'Level {n}', skinUnlocked: 'New style unlocked!',
       newsTitle: "WHAT'S NEW", newsVer: 'Version {v}', newsOk: "Let's play!",
-      newsItems: 'Styles for your crates, belt and pistons (in Upgrades)|Player level with rewards|Gears to keep playing after you lose|Daily challenge and orders during the shift|Share your score and check your ranking|Feedback: tell us what to improve, from Settings',
+      newsItems: 'Weekly events with a goal and prize|3 stars in every factory|New factories: Harbor, Laboratory and Mine',
       updTitle: 'Update ready', updText: 'A new version of Belt Panic has been downloaded. Restart to use it (it takes a few seconds).', updNow: 'Restart now', updLater: 'Later',
       tutTap: 'Tap here!', tutTapKey: 'Tap here or press {k}',
       tutGold: 'Gold crates fit any bin: +5 points', tutBomb: 'Never kick a bomb. Let it roll away!',
@@ -596,6 +637,25 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       tutRetry: 'Try again!', tutDone: "YOU'RE READY!", turn: 'Turn your phone sideways for a bigger belt',
     },
     es: {
+      fac_port: 'Puerto', fac_lab: 'Laboratorio', fac_mine: 'Mina',
+      intro_port: 'Puerto: la cinta acelera y frena como las olas. Monedas x1,8',
+      intro_lab: 'Laboratorio: todas las cajas son misterio y algunas cambian de color una vez. Monedas x2',
+      intro_mine: 'Mina: ¡está oscuro! Solo ves las cajas bajo las lámparas de los pistones. Monedas x2,2',
+      flipTxt: '¡CAMBIO!',
+      ev_bombs: 'Semana de bombas', ev_bombs_d: 'el doble de bombas, el doble de monedas',
+      ev_gold: 'Fiebre del oro', ev_gold_d: 'el triple de oro y cada una vale 15',
+      ev_speed: 'Semana turbo', ev_speed_d: 'cinta 20% más rápida, XP x1,5',
+      ev_orders: 'Lluvia de pedidos', ev_orders_d: 'pedidos cada 4 s, pago x2',
+      ev_mystery: 'Semana misteriosa', ev_mystery_d: 'cajas misterio desde el inicio, monedas x1,5',
+      ev_gears: 'Semana de engranes', ev_gears_d: 'el triple de cajas engrane',
+      evChip: '★ {name}', weekTitle: '{goal} · quedan {d} días', weekClaim: '+{c} · +{g} engranes', weekDone: '¡META SEMANAL CUMPLIDA!',
+      wg_dodge: 'Esquiva {n} bombas esta semana', wg_gold: 'Atrapa {n} cajas de oro esta semana', wg_sorted: 'Clasifica {n} cajas esta semana',
+      wg_orders: 'Completa {n} pedidos esta semana', wg_mystery: 'Revela {n} cajas misterio esta semana', wg_gears: 'Atrapa {n} cajas engrane esta semana',
+      starNew: '★ ¡NUEVA ESTRELLA! +{n}', newFacStars: '¡NUEVA FÁBRICA: {name}!',
+      facStars: 'Necesitas {need} ★ (tienes {have})', needStars: 'Faltan {n} ★', facInfoStar: 'Récord {best} · {stars} · siguiente: {goal}',
+      sg_score: '{n} puntos', sg_combo: 'combo {n}', sg_orders: '{n} pedidos', sg_mystery: '{n} misterios', sg_gold: '{n} oros', sg_sorted: '{n} cajas',
+      g_events: 'Evento semanal', g_events_d: 'Cada semana (lunes a domingo) trae una regla especial para todos y una meta semanal que paga 300 monedas y 2 engranes. No aplica en el desafío diario.',
+      g_stars: 'Estrellas por fábrica', g_stars_d: 'Cada fábrica tiene 3 estrellas (100 monedas cada una). Las estrellas abren el Puerto (4), el Laboratorio (7) y la Mina (10).',
       fac_classic: 'Fábrica Clásica', fac_frozen: 'Bodega Congelada', fac_candy: 'Fábrica de Dulces',
       facInfo: 'Récord {best} · monedas x{mult}', facLocked: 'Bloqueada · {cost} monedas', unlock: 'Desbloquear · {cost}', needCoins: 'Faltan {n} monedas',
       prevFactory: 'Fábrica anterior', nextFactory: 'Fábrica siguiente', newFactory: '¡FÁBRICA NUEVA!',
@@ -677,7 +737,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       sk_kicker_steel: 'Industrial', sk_kicker_chrome: 'Cromado', sk_kicker_gold: 'Dorado', sk_kicker_robot: 'Robot',
       skEquip: 'Usar', skEquipped: 'En uso', skLevel: 'Nivel {n}', skinUnlocked: '¡Aspecto nuevo desbloqueado!',
       newsTitle: 'NOVEDADES', newsVer: 'Versión {v}', newsOk: '¡A jugar!',
-      newsItems: 'Aspectos para tus cajas, cinta y pistones (en Mejoras)|Nivel de jugador con premios|Engranes para seguir jugando al perder|Desafío diario y pedidos durante el turno|Comparte tu puntaje y revisa tu clasificación|Comentarios: cuéntanos qué mejorar desde Ajustes',
+      newsItems: 'Eventos semanales con meta y premio|3 estrellas en cada fábrica|Fábricas nuevas: Puerto, Laboratorio y Mina',
       updTitle: 'Actualización lista', updText: 'Se descargó una versión nueva de Belt Panic. Reinicia para usarla (tarda unos segundos).', updNow: 'Reiniciar ahora', updLater: 'Más tarde',
       tutTap: '¡Toca aquí!', tutTapKey: 'Toca aquí o presiona {k}',
       tutGold: 'Las cajas doradas sirven en cualquier contenedor: +5', tutBomb: 'Nunca patees una bomba. ¡Déjala pasar!',
@@ -732,7 +792,20 @@ const FACTORIES = [
   { id: 'classic', cost: 0, speed: 1, coins: 1, gold: 1, powerAt: 15, heavyAt: 40, mysteryAt: 70 },
   { id: 'frozen', cost: 1500, speed: 1.1, coins: 1.3, gold: 1, powerAt: 15, heavyAt: 40, mysteryAt: 30 },
   { id: 'candy', cost: 4000, speed: 1.2, coins: 1.6, gold: 2, powerAt: 15, heavyAt: 25, mysteryAt: 60 },
+  // star factories: unlocked with stars, each with its own twist
+  { id: 'port', cost: 0, stars: 4, speed: 1.05, coins: 1.8, gold: 1, powerAt: 15, heavyAt: 40, mysteryAt: 70, waves: true },     // the belt speeds up and slows down like waves
+  { id: 'lab', cost: 0, stars: 7, speed: 1, coins: 2, gold: 1, powerAt: 15, heavyAt: 45, mysteryAt: 0, allMystery: true, flipP: 0.2 },  // every colour crate is a mystery; some change colour once
+  { id: 'mine', cost: 0, stars: 10, speed: 1, coins: 2.2, gold: 1, powerAt: 15, heavyAt: 40, mysteryAt: 70, dark: true },        // dark: crates show only under the lamps
 ];
+// Weekly events (see meta.js eventFor): what each one changes in a shift
+const EVENT_MODS = {
+  bombs: { bombMul: 2, coinMul: 2 },
+  gold: { goldMul: 3, goldPts: 15 },
+  speed: { speedMul: 1.2, xpMul: 1.5 },
+  orders: { orderGap: 4, orderMul: 2 },
+  mystery: { mysteryFromStart: true, coinMul: 1.5 },
+  gears: { gearMul: 3, gearAt: 20 },
+};
 function factoryById(id) { return FACTORIES.find((f) => f.id === id) || FACTORIES[0]; }
 
 function mulberry32(seed) {
@@ -754,6 +827,10 @@ function createGame(opts = {}) {
     rand,                         // crates on the belt: the same draws per crate, so a seed gives everyone the same crates
     rand2: mulberry32(seed ^ 0x5bd1e995),   // shift changes and orders, kept apart so they do not change the crates
     daily: !!opts.daily,
+    event: !opts.daily && !opts.tutorial && EVENT_MODS[opts.event] ? opts.event : null,
+    ev: (!opts.daily && !opts.tutorial && EVENT_MODS[opts.event]) || {},
+    mysteryRevealed: 0,
+    flips: 0,
     continues: 0,
     maxContinues: opts.daily ? 0 : MAX_CONTINUES,
     gearsCaught: 0,
@@ -773,7 +850,7 @@ function createGame(opts = {}) {
     bombsDodged: 0,
     over: false,
     continued: false,
-    speedMul: up.slowStart ? 0.85 : 1,
+    speedMul: (up.slowStart ? 0.85 : 1) * ((!opts.daily && !opts.tutorial && EVENT_MODS[opts.event] && EVENT_MODS[opts.event].speedMul) || 1),
     window: 30 * (1 + 0.2 * (up.wide || 0)),
     factory: factoryById(opts.factory),
     luck: up.luck || 0,                       // more gold crates and power-ups
@@ -851,7 +928,8 @@ function tutorialRetry(g, reason, x) {
 function speed(g) {
   const s = Math.min(g.score, 400);
   const f = g.factory ? g.factory.speed : 1;
-  return 150 * g.speedMul * f * (1 + s / 230) * (g.slowT > 0 ? 0.6 : 1);
+  const wave = g.factory && g.factory.waves ? 1 + 0.32 * Math.sin((g.t * Math.PI * 2) / 6) : 1;   // Port: 6-second waves
+  return 150 * g.speedMul * f * wave * (1 + s / 230) * (g.slowT > 0 ? 0.6 : 1);
 }
 
 function spawnGap(g) {
@@ -864,18 +942,24 @@ function pickCrate(g) {
   // always four draws per crate: crate number N gets the same draws for every player with the same seed
   const rp = g.rand(), rw = g.rand(), r = g.rand(), rc = g.rand();
   const color = () => Math.floor(rc * 3);
-  if (s >= GEAR_AT && !g.tutorial && rp >= 1 - GEAR_P) return { kind: KIND.GEAR };
+  const ev = g.ev || {};
+  if (s >= (ev.gearAt ?? GEAR_AT) && !g.tutorial && rp >= 1 - GEAR_P * (ev.gearMul || 1)) return { kind: KIND.GEAR };
   if (s >= f.powerAt && rp < 0.035 * (1 + 0.3 * g.luck)) {
     return { kind: KIND.POWER, power: POWERS[Math.floor(rw * POWERS.length)] };
   }
-  const bombP = s >= 8 ? 0.13 : 0;
-  const goldP = s >= 5 ? (s >= 8 ? 0.04 : 0.17) * f.gold * (1 + 0.15 * g.luck) : 0;
+  const bombP = (s >= 8 ? 0.13 : 0) * (ev.bombMul || 1);
+  const goldP = (s >= 5 ? (s >= 8 ? 0.04 : 0.17) * f.gold * (1 + 0.15 * g.luck) : 0) * (ev.goldMul || 1);
   const heavyP = s >= f.heavyAt ? 0.08 : 0;
-  const mysteryP = s >= f.mysteryAt ? 0.08 : 0;
+  const mysteryP = s >= f.mysteryAt || ev.mysteryFromStart ? 0.08 : 0;
   if (r < bombP) return { kind: KIND.BOMB };
   if (r < bombP + goldP) return { kind: KIND.GOLD };
   if (r < bombP + goldP + heavyP) return { kind: KIND.HEAVY, color: color(), hits: 0 };
   if (r < bombP + goldP + heavyP + mysteryP) return { kind: KIND.MYSTERY, color: color() };
+  if (f.allMystery && !g.tutorial) {
+    // Lab: every colour crate is a mystery; some change colour once between the first and the second kicker
+    const flip = rw < f.flipP;
+    return flip ? { kind: KIND.MYSTERY, color: color(), flipAt: 380 + 70 * (rw / f.flipP) } : { kind: KIND.MYSTERY, color: color() };
+  }
   return { kind: color() };
 }
 
@@ -921,7 +1005,7 @@ function updateOrder(g, dt) {
   if (g.order.t <= 0) {
     emit(g, 'orderFail', { order: g.order });
     g.order = null;
-    g.orderIn = ORDER_GAP;
+    g.orderIn = (g.ev && g.ev.orderGap) || ORDER_GAP;
   }
 }
 /** what: 'good' (a correct sort, crate c), 'gold', 'bomb' (a bomb let through), 'miss' (a mistake). */
@@ -933,11 +1017,11 @@ function orderProgress(g, what, c) {
   else if (o.type === 'bombs' && what === 'bomb') o.have += 1;
   else if (o.type === 'gold' && what === 'gold') o.have += 1;
   if (o.have >= o.need) {
-    g.orderCoins += o.reward;
+    g.orderCoins += o.reward * ((g.ev && g.ev.orderMul) || 1);
     g.ordersDone += 1;
-    emit(g, 'orderDone', { order: o });
+    emit(g, 'orderDone', { order: o, paid: o.reward * ((g.ev && g.ev.orderMul) || 1) });
     g.order = null;
-    g.orderIn = ORDER_GAP;
+    g.orderIn = (g.ev && g.ev.orderGap) || ORDER_GAP;
   }
 }
 
@@ -1029,7 +1113,17 @@ function update(g, dt) {
       if (c.kind === KIND.MYSTERY && c.x >= REVEAL_X) {
         c.kind = c.color;
         c.revealed = true;
+        g.mysteryRevealed += 1;
         emit(g, 'reveal', { x: c.x });
+      }
+      if (c.flipAt && c.revealed && !c.flipped && c.x >= c.flipAt && c.kind <= 2) {
+        // the new colour always has its bin further along the belt, so the crate can still be sorted
+        const ahead = [g.bins[1], g.bins[2]].filter((col) => col !== c.kind);
+        c.kind = ahead[c.id % ahead.length];
+        c.color = c.kind;
+        c.flipped = true;
+        g.flips += 1;
+        emit(g, 'flip', { x: c.x });
       }
       if (c.x > W + CRATE) {
         if (c.kind === KIND.BOMB) {
@@ -1059,7 +1153,7 @@ function resolveDrop(g, c) {
     g.goldCaught += 1;
     orderProgress(g, 'gold');
     g.maxCombo = Math.max(g.maxCombo, g.combo);
-    addScore(g, 5 * mult(g), KICKER_X[c.bin]);
+    addScore(g, (g.ev && g.ev.goldPts || 5) * mult(g), KICKER_X[c.bin]);
     emit(g, 'gold', { x: KICKER_X[c.bin] });
     if (g.tutorial) tutorialAdvance(g);
   } else if (c.kind === KIND.GEAR) {
@@ -1165,7 +1259,7 @@ function revive(g) {
 
 function coinsFor(g) {
   const base = Math.floor(g.score / 4) + g.goldCaught * 2 + Math.floor(g.maxCombo / 10) * 3 + (g.heavyBroken || 0) + (g.orderCoins || 0);
-  const factor = (g.factory ? g.factory.coins : 1) * (1 + 0.1 * (g.coinBonus || 0));
+  const factor = (g.factory ? g.factory.coins : 1) * (1 + 0.1 * (g.coinBonus || 0)) * ((g.ev && g.ev.coinMul) || 1);
   return Math.floor(base * factor);
 }
 
@@ -1180,7 +1274,7 @@ const UPGRADES = [
   { id: 'helmets', max: 3, cost: [250, 500, 900] },
 ];
 
-const API = { GEAR_AT, MAX_CONTINUES, ORDER_TIME, continueCost, W, BELT_Y, KICKER_X, CRATE, KIND, POWERS, REVEAL_X, FACTORIES, factoryById, UPGRADES, TUTORIAL_STEPS, tutorialTarget, crateColor, createGame, update, kick, revive, speed, coinsFor, mult };
+const API = { EVENT_MODS, GEAR_AT, MAX_CONTINUES, ORDER_TIME, continueCost, W, BELT_Y, KICKER_X, CRATE, KIND, POWERS, REVEAL_X, FACTORIES, factoryById, UPGRADES, TUTORIAL_STEPS, tutorialTarget, crateColor, createGame, update, kick, revive, speed, coinsFor, mult };
 if (typeof module !== 'undefined') module.exports = API;
 if (typeof window !== 'undefined') window.BeltLogic = API;
 </script><script>// Belt Panic — daily missions, daily streak and run rewards. Pure functions over the save data,
@@ -1414,7 +1508,7 @@ function achievementsClaimable(save) {
 /** Buys a factory if affordable. Returns true on success. */
 function unlockFactory(save, factory) {
   ensureStats(save);
-  if (save.factories.includes(factory.id) || save.coins < factory.cost) return false;
+  if (factory.stars || save.factories.includes(factory.id) || save.coins < factory.cost) return false;
   save.coins -= factory.cost;
   save.factories.push(factory.id);
   return true;
@@ -1509,7 +1603,7 @@ function levelInfo(xp) {
   return { level, into: rest, need: xpToNext(level) };
 }
 /** XP for a shift: its score plus 15 per order filled. */
-function xpForRun(g) { return g.score + 15 * (g.ordersDone || 0); }
+function xpForRun(g) { return Math.round((g.score + 15 * (g.ordersDone || 0)) * ((g.ev && g.ev.xpMul) || 1)); }
 const MISSION_XP = 20;
 /** Rewards for reaching a level: coins every level, an Engrane every 5 levels; skins unlock by level on their own. */
 function levelReward(level) {
@@ -1541,7 +1635,91 @@ function addXp(save, n) {
   return ups;
 }
 
+// ------------------------------------------------------------------ weekly events (same for everyone, Monday to Sunday)
+const EVENTS = ['gold', 'bombs', 'orders', 'speed', 'mystery', 'gears'];
+const WEEK_GOALS = {
+  bombs: { stat: 'dodge', target: 80 }, gold: { stat: 'gold', target: 60 }, speed: { stat: 'sorted', target: 400 },
+  orders: { stat: 'orders', target: 15 }, mystery: { stat: 'mystery', target: 60 }, gears: { stat: 'gears', target: 8 },
+};
+const WEEK_REWARD = { coins: 300, gears: 2 };
+function mondayOf(date) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+/** The event of the week that contains `date` (rotates every Monday, the same for every player). */
+function eventFor(date) {
+  const mon = mondayOf(date || new Date());
+  const weeks = Math.round((mon - new Date(2026, 0, 5)) / (7 * 86400000));   // 5 Jan 2026 was a Monday
+  const id = EVENTS[((weeks % EVENTS.length) + EVENTS.length) % EVENTS.length];
+  const end = new Date(mon); end.setDate(end.getDate() + 7);
+  const daysLeft = Math.max(1, Math.ceil((end - (date || new Date())) / 86400000));
+  return { id, key: dayKey(mon), daysLeft, goal: WEEK_GOALS[id] };
+}
+function ensureWeek(save, date) {
+  const ev = eventFor(date);
+  if (!save.week || save.week.key !== ev.key) save.week = { key: ev.key, event: ev.id, progress: 0, claimed: false };
+  return save.week;
+}
+function weekStat(g, stat) {
+  return { dodge: g.bombsDodged, gold: g.goldCaught, sorted: g.sorted, orders: g.ordersDone || 0, mystery: g.mysteryRevealed || 0, gears: g.gearsCaught || 0 }[stat] || 0;
+}
+/** Adds a shift (or the new part of a continued shift) to the weekly goal; returns true when it was just completed. */
+function applyWeek(save, g, prev, date) {
+  const w = ensureWeek(save, date);
+  if (!g.event || g.event !== w.event) return false;
+  const goal = WEEK_GOALS[w.event];
+  const before = w.progress;
+  w.progress = Math.min(goal.target, w.progress + Math.max(0, weekStat(g, goal.stat) - (prev || 0)));
+  return before < goal.target && w.progress >= goal.target;
+}
+function claimWeek(save) {
+  const w = save.week;
+  if (!w || w.claimed || w.progress < WEEK_GOALS[w.event].target) return false;
+  w.claimed = true;
+  save.coins += WEEK_REWARD.coins;
+  save.gears = (save.gears || 0) + WEEK_REWARD.gears;
+  return true;
+}
+
+// ------------------------------------------------------------------ stars: 3 goals per factory, in a single shift
+const STAR_GOALS = {
+  classic: [['score', 100], ['combo', 30], ['orders', 5]],
+  frozen: [['score', 100], ['mystery', 15], ['combo', 40]],
+  candy: [['score', 80], ['gold', 8], ['score', 150]],
+  port: [['score', 100], ['combo', 30], ['orders', 4]],
+  lab: [['score', 80], ['sorted', 60], ['combo', 30]],
+  mine: [['score', 80], ['combo', 25], ['gold', 5]],
+};
+const STAR_COINS = 100;
+function starValue(g, type) {
+  return { score: g.score, combo: g.maxCombo, orders: g.ordersDone || 0, mystery: g.mysteryRevealed || 0, gold: g.goldCaught, sorted: g.sorted }[type] || 0;
+}
+function ensureStars(save) { save.stars = save.stars || {}; return save.stars; }
+function factoryStars(save, id) { return (ensureStars(save)[id] || [false, false, false]); }
+function totalStars(save) { return Object.values(ensureStars(save)).reduce((a, s) => a + s.filter(Boolean).length, 0); }
+/** Marks the stars this shift earned (not in the daily challenge); pays STAR_COINS each; returns their indexes. */
+function checkStars(save, g) {
+  if (!g || g.daily || g.tutorial || !g.factory || !STAR_GOALS[g.factory.id]) return [];
+  const id = g.factory.id;
+  const got = ensureStars(save)[id] || (save.stars[id] = [false, false, false]);
+  const fresh = [];
+  STAR_GOALS[id].forEach(([type, n], i) => {
+    if (!got[i] && starValue(g, type) >= n) { got[i] = true; save.coins += STAR_COINS; fresh.push(i); }
+  });
+  return fresh;
+}
+/** Star factories reached with the stars collected so far are added to the owned factories; returns their ids. */
+function unlockStarFactories(save, factories) {
+  ensureStats(save);
+  const n = totalStars(save), opened = [];
+  for (const f of factories) if (f.stars && n >= f.stars && !save.factories.includes(f.id)) { save.factories.push(f.id); opened.push(f.id); }
+  return opened;
+}
+
 const META = {
+  EVENTS, WEEK_GOALS, WEEK_REWARD, eventFor, ensureWeek, applyWeek, claimWeek, weekStat,
+  STAR_GOALS, STAR_COINS, starValue, ensureStars, factoryStars, totalStars, checkStars, unlockStarFactories,
   SKINS, ensureSkins, skinOwned, buySkin, equipSkin,
   MAX_LEVEL, MISSION_XP, xpToNext, levelInfo, xpForRun, levelReward, ensureLevel, addXp,
   START_GEARS, GEAR_ADS_PER_DAY, CHALLENGE_GEARS, STREAK_GEARS, ensureGears, spendGears, gearAdsLeft, gearFromAd,
@@ -1629,12 +1807,18 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     root.toggle('halloween', theme === 'halloween');
     root.toggle('f-frozen', theme === 'frozen');
     root.toggle('f-candy', theme === 'candy');
+    root.toggle('f-port', theme === 'port');
+    root.toggle('f-lab', theme === 'lab');
+    root.toggle('f-mine', theme === 'mine');
     readPalette();   // (callers switch the music: Audio.setSong(theme))
   }
   applyTheme();
   const spooky = () => theme === 'halloween';
   const frosty = () => theme === 'frozen';
   const sweet = () => theme === 'candy';
+  const portTheme = () => theme === 'port';
+  const labTheme = () => theme === 'lab';
+  const mineTheme = () => theme === 'mine';
 
   const isPlaying = () => mode === 'play';
 
@@ -1844,6 +2028,9 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       halloween: { roots: [38, 46, 43, 45], lead: [[74, 0, 77, 0, 81, 0, 77, 0], [70, 0, 74, 0, 77, 0, 74, 0], [67, 0, 70, 0, 74, 0, 70, 0], [69, 0, 73, 0, 76, 0, 79, 0]], wave: 'sine' },
       // Frozen Warehouse: E minor with bell-like highs; Candy Factory: bouncy C major
       frozen: { roots: [40, 36, 43, 38], lead: [[76, 0, 79, 0, 83, 0, 79, 0], [72, 0, 76, 0, 79, 0, 76, 0], [71, 0, 74, 0, 79, 0, 74, 0], [74, 0, 78, 0, 81, 0, 78, 0]], wave: 'sine' },
+      port: { roots: [43, 48, 45, 50], lead: [[74, 0, 0, 79, 0, 0, 76, 0], [72, 0, 0, 76, 0, 0, 79, 0], [72, 0, 0, 77, 0, 0, 74, 0], [74, 0, 0, 78, 0, 0, 81, 0]], wave: 'sine' },
+      lab: { roots: [45, 41, 48, 43], lead: [[69, 72, 76, 72, 69, 72, 76, 81], [65, 69, 72, 69, 65, 69, 72, 77], [72, 76, 79, 76, 72, 76, 79, 84], [67, 71, 74, 71, 67, 71, 74, 79]], wave: 'triangle' },
+      mine: { roots: [36, 39, 34, 38], lead: [[60, 0, 63, 0, 0, 0, 67, 0], [63, 0, 66, 0, 0, 0, 70, 0], [58, 0, 62, 0, 0, 0, 65, 0], [62, 0, 65, 0, 0, 0, 69, 0]], wave: 'triangle' },
       candy: { roots: [48, 45, 41, 43], lead: [[72, 0, 76, 0, 79, 0, 84, 0], [69, 0, 72, 0, 76, 0, 81, 0], [65, 0, 69, 0, 72, 0, 77, 0], [67, 0, 71, 0, 74, 0, 79, 0]], wave: 'triangle' },
     };
     let song = SONGS.classic;
@@ -1989,6 +2176,9 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     if (spooky()) drawNight(b);
     if (frosty()) drawFrost(b);
     if (sweet()) drawCandy(b);
+    if (portTheme()) drawPort(b);
+    if (labTheme()) drawLab(b);
+    if (mineTheme()) drawMine(b);
     b.fillStyle = '#0d1015';
     b.fillRect(0, BELT_Y, W, 30);
     beltBody(b, skin('belt'), W);
@@ -2061,6 +2251,101 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   // deterministic pseudo-random numbers for static decorations
   function prand(i) { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
   // Frozen Warehouse: icicles along the roof and a snowdrift on the floor
+  // ---- Port: sea at the top, wooden dock, a crane and a lifebuoy
+  function drawPort(b) {
+    const sea = b.createLinearGradient(0, 0, 0, 80);
+    sea.addColorStop(0, '#0f3b57'); sea.addColorStop(1, '#0a2638');
+    b.fillStyle = sea; b.fillRect(0, 0, W, 80);
+    b.fillStyle = '#4a3624'; b.fillRect(0, 78, W, 10);
+    b.fillStyle = 'rgba(0,0,0,0.22)';
+    for (let y = 114; y < H; y += 26) b.fillRect(0, y, W, 2);
+    for (let y = 88, row = 0; y < H; y += 26, row++) for (let x = (row % 2) * 90; x < W; x += 180) b.fillRect(x, y, 2, 26);
+    b.save(); b.globalAlpha = 0.45; b.strokeStyle = '#d9962f'; b.lineWidth = 5;
+    b.beginPath(); b.moveTo(70, 80); b.lineTo(70, 6); b.lineTo(230, 6); b.moveTo(70, 30); b.lineTo(110, 6); b.stroke();
+    b.lineWidth = 1.5; b.beginPath(); b.moveTo(200, 6); b.lineTo(200, 44); b.stroke();
+    b.fillStyle = '#d9962f'; b.fillRect(193, 44, 14, 8); b.restore();
+    b.strokeStyle = '#e8eef3'; b.lineWidth = 9; b.beginPath(); b.arc(62, 470, 24, 0, Math.PI * 2); b.stroke();
+    b.strokeStyle = '#e5484d'; b.lineWidth = 9;
+    for (let i = 0; i < 4; i++) { b.beginPath(); b.arc(62, 470, 24, i * Math.PI / 2, i * Math.PI / 2 + 0.6); b.stroke(); }
+    b.fillStyle = '#2a2420'; for (const x of [890, 920]) { b.fillRect(x - 9, 452, 18, 30); b.fillStyle = '#3b332c'; b.fillRect(x - 12, 448, 24, 8); b.fillStyle = '#2a2420'; }
+  }
+  function drawWaves(now) {
+    ctx.strokeStyle = 'rgba(160,215,240,0.35)'; ctx.lineWidth = 2;
+    for (let j = 0; j < 2; j++) {
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 16) { const y = 30 + j * 26 + Math.sin(x / 60 + now / (700 + j * 300) + j) * 4; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      ctx.stroke();
+    }
+  }
+  // ---- Lab: tiled floor, glass tubes with glowing liquids, bubbles
+  const TUBES = [[300, '#39e6a0'], [360, '#ff5fa2'], [600, '#5ee0ff'], [660, '#ffd34d']];
+  function drawLab(b) {
+    b.strokeStyle = 'rgba(255,255,255,0.05)'; b.lineWidth = 1; b.beginPath();
+    for (let x = 0; x <= W; x += 40) { b.moveTo(x, 300); b.lineTo(x, H); }
+    for (let y = 300; y <= H; y += 40) { b.moveTo(0, y); b.lineTo(W, y); }
+    b.stroke();
+    b.fillStyle = '#10162a'; b.fillRect(0, 0, W, 84);
+    for (const [x, col] of TUBES) {
+      b.fillStyle = 'rgba(255,255,255,0.08)'; b.fillRect(x - 12, 6, 24, 72);
+      b.globalAlpha = 0.55; b.fillStyle = col; b.fillRect(x - 10, 30, 20, 46); b.globalAlpha = 1;
+      b.strokeStyle = 'rgba(255,255,255,0.35)'; b.lineWidth = 2; b.strokeRect(x - 12, 6, 24, 72);
+    }
+    for (const [cx, col] of [[70, '#39e6a0'], [890, '#b48cff']]) {
+      b.fillStyle = 'rgba(255,255,255,0.1)'; b.beginPath(); b.moveTo(cx - 10, 420); b.lineTo(cx + 10, 420); b.lineTo(cx + 28, 490); b.lineTo(cx - 28, 490); b.closePath(); b.fill();
+      b.globalAlpha = 0.6; b.fillStyle = col; b.beginPath(); b.moveTo(cx - 19, 455); b.lineTo(cx + 19, 455); b.lineTo(cx + 27, 488); b.lineTo(cx - 27, 488); b.closePath(); b.fill(); b.globalAlpha = 1;
+    }
+  }
+  function drawBubbles(now) {
+    for (let i = 0; i < TUBES.length; i++) {
+      const [x, col] = TUBES[i];
+      ctx.fillStyle = col;
+      for (let j = 0; j < 3; j++) {
+        const p = ((now / 1600 + j / 3 + i * 0.17) % 1);
+        ctx.globalAlpha = 0.8 * (1 - p);
+        ctx.beginPath(); ctx.arc(x + Math.sin(now / 300 + j * 2 + i) * 4, 74 - p * 42, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+  // ---- Mine: rock walls, timber supports; dark belt with lamps under each piston
+  function drawMine(b) {
+    for (let i = 0; i < 70; i++) {
+      const x = prand(i) * W, y = prand(i + 300) * H, r = 6 + prand(i + 600) * 18;
+      b.fillStyle = `rgba(${90 + (i % 3) * 12},${74 + (i % 3) * 10},${58 + (i % 3) * 8},0.18)`;
+      b.beginPath(); b.ellipse(x, y, r * 1.4, r, prand(i + 900) * 3, 0, Math.PI * 2); b.fill();
+    }
+    b.fillStyle = '#5a3d22';
+    for (const x of [14, W - 14]) b.fillRect(x - 9, 0, 18, H);
+    b.fillRect(0, 70, W, 12);
+    b.fillStyle = 'rgba(0,0,0,0.3)'; b.fillRect(0, 80, W, 3);
+  }
+  let darkSprite = null, darkKey = '';
+  function drawDarkness(now) {
+    const key = px + '|' + W;
+    if (darkKey !== key) {
+      darkKey = key;
+      darkSprite = document.createElement('canvas');
+      darkSprite.width = Math.ceil(W * px); darkSprite.height = Math.ceil(110 * px);
+      const d = darkSprite.getContext('2d');
+      if (!d) { darkSprite = null; return; }
+      d.scale(px, px);
+      d.fillStyle = 'rgba(6,5,4,0.9)';
+      d.fillRect(0, 0, W, 110);
+      d.globalCompositeOperation = 'destination-out';
+      for (const kx of KICKER_X) {
+        const gr = d.createRadialGradient(kx, 62, 10, kx, 62, 105);
+        gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.62, 'rgba(0,0,0,0.95)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        d.fillStyle = gr; d.fillRect(kx - 110, 0, 220, 110);
+      }
+    }
+    if (darkSprite) ctx.drawImage(darkSprite, 0, BELT_Y - 92, W, 110);
+    // the lamps under the pistons flicker a little
+    for (let k = 0; k < 3; k++) {
+      const f = 0.85 + 0.15 * Math.sin(now / 90 + k * 4) * Math.sin(now / 37 + k);
+      ctx.fillStyle = `rgba(255,190,90,${0.9 * f})`;
+      ctx.beginPath(); ctx.arc(KICKER_X[k], 200, 5, 0, Math.PI * 2); ctx.fill();
+    }
+  }
   function drawFrost(b) {
     for (let x = 6, i = 0; x < W; x += 30, i++) {
       const len = 14 + prand(i) * 30;
@@ -2232,7 +2517,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   let introT = 0;
   const INTRO = { 5: 'introHeavy', 6: 'introMystery', 7: 'introPower', 8: 'introGear' };
   function checkIntros() {
-    if (!game || game.tutorial) return;
+    if (!game || game.tutorial || introT > 0) return;   // never cover another notice
     for (const c of game.crates) {
       const key = INTRO[c.kind];
       if (key && !save.seen[key] && c.x > -10) {
@@ -2253,7 +2538,20 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       const day = M.dayKey();
       game = L.createGame({ seed: M.challengeSeed(day), daily: true, factory: 'classic', best: M.ensureChallenge(save, day).best });
     } else {
-      game = L.createGame({ best: factoryBest(viewFactory), upgrades: save.upgrades, factory: viewFactory, tutorial: tut });
+      game = L.createGame({ best: factoryBest(viewFactory), upgrades: save.upgrades, factory: viewFactory, tutorial: tut, event: M.eventFor().id });
+    }
+    game.weekPrev = 0;
+    // first time in a new factory: what its twist is; otherwise, the first shift of the day names the week's event
+    const fid = game.factory.id;
+    if (!tut && !game.daily && ['port', 'lab', 'mine'].includes(fid) && !save.seen['fac_' + fid]) {
+      save.seen['fac_' + fid] = 1;
+      if (fid === 'lab') save.seen.introMystery = 1;
+      introText = T('intro_' + fid);
+      introT = 5;
+    } else if (game.event && save.seen.eventDay !== M.dayKey()) {
+      save.seen.eventDay = M.dayKey();
+      introText = `${T('ev_' + game.event)}: ${T('ev_' + game.event + '_d')}`;
+      introT = 4.5;
     }
     game.statPrev = null;       // lifetime stats already counted for this run
     game.paid = 0;              // coins already paid out for this run (a continued run ends twice)
@@ -2318,6 +2616,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         case 'whiff': Audio.whiff(); break;
         case 'dent': Audio.clang(); Haptics.buzz('medium'); burst(e.x, 250, '#c9d1da', 10, 220); shake = Math.max(shake, 0.12); break;
         case 'reveal': Audio.whiff(); break;
+        case 'flip': Audio.whiff(); Haptics.buzz('light'); floatText(e.x, 200, T('flipTxt'), C.hazard, 20, 0.8); break;
         case 'power':
           Audio.reward(); Haptics.buzz('medium');
           if (k >= 0) binBounce[k] = 0.3;
@@ -2441,9 +2740,13 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     for (const el of document.querySelectorAll('[data-level]')) el.textContent = M.levelInfo(save.xp).level;
     $('feedback-row').hidden = !FEEDBACK_URL;
     $('challenge-chip').hidden = !save.tutorialDone || viewFactory === 'challenge' || M.ensureChallenge(save, M.dayKey()).rewarded;
+    const evNow = M.eventFor();
+    $('event-chip').hidden = !save.tutorialDone;
+    $('event-chip').textContent = T('evChip', { name: T('ev_' + evNow.id) });
     $('set-reminders').parentElement.hidden = !Notify.available;
     tog0('set-reminders', !!save.reminders);
-    const claimM = M.claimableCount(save);
+    const wk = M.ensureWeek(save, new Date());
+    const claimM = M.claimableCount(save) + (!wk.claimed && wk.progress >= M.WEEK_GOALS[wk.event].target ? 1 : 0);
     const claimA = M.achievementsClaimable(save);
     const claimable = claimM + claimA;
     for (const id of ['missions-badge', 'missions-badge-over']) { $(id).hidden = claimable === 0; $(id).textContent = claimable; }
@@ -2464,6 +2767,9 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     $('set-theme').parentElement.hidden = !SEASON;
     tog('set-theme', true, spooky() ? T('themeHalloween') : T('themeClassic'));
     $('season-chip').hidden = !spooky();
+    // at most three chips under the logo: challenge, event, streak, then the season
+    let shown = 0;
+    for (const id of ['challenge-chip', 'event-chip', 'streak-chip', 'season-chip']) { if (!$(id).hidden) { shown += 1; if (shown > 3) $(id).hidden = true; } }
   }
 
   function applyLanguage() {
@@ -2496,6 +2802,13 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       save.best = Math.max(save.best, game.score);
     }
     game.statPrev = M.addRunStats(save, game, game.statPrev);
+    // weekly goal, stars and the factories they open
+    const goalStat = game.event ? M.WEEK_GOALS[game.event].stat : null;
+    if (M.applyWeek(save, game, game.weekPrev)) { floatText(W / 2, 150, T('weekDone'), C.gold, 28, 2); Audio.reward(); }
+    if (goalStat) game.weekPrev = M.weekStat(game, goalStat);
+    const newStars = M.checkStars(save, game);
+    if (newStars.length) { floatText(W / 2, 185, T('starNew', { n: newStars.length * M.STAR_COINS }), C.gold, 30, 2); Audio.level(); }
+    for (const id of M.unlockStarFactories(save, L.FACTORIES)) floatText(W / 2, 220, T('newFacStars', { name: T('fac_' + id) }), C.hazard, 30, 2.4);
     const freshAch = M.checkAchievements(save);
     if (freshAch.length) { floatText(W / 2, 200, T('achDone'), C.gold, 34, 1.8); Audio.reward(); }
     save.coins += lastEarned;
@@ -2589,7 +2902,22 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     const f = L.factoryById(viewFactory);
     const owned = save.factories.includes(f.id);
     $('fac-name').textContent = T('fac_' + f.id);
-    $('fac-info').textContent = owned ? T('facInfo', { best: factoryBest(f.id), mult: String(f.coins).replace('.', I18n.lang === 'es' ? ',' : '.') }) : T('facLocked', { cost: f.cost });
+    if (f.stars && !owned) {
+      // star factory not reached yet
+      const have = M.totalStars(save);
+      $('fac-info').textContent = T('facStars', { need: f.stars, have });
+      const play = $('play');
+      play.classList.add('locked');
+      play.disabled = true;
+      play.textContent = T('needStars', { n: f.stars - have });
+      return;
+    }
+    const st = M.factoryStars(save, f.id), goals = M.STAR_GOALS[f.id];
+    const stars = st.map((x) => (x ? '★' : '☆')).join('');
+    const next = goals ? goals.findIndex((_, i) => !st[i]) : -1;
+    $('fac-info').textContent = !owned ? T('facLocked', { cost: f.cost })
+      : next >= 0 ? T('facInfoStar', { best: factoryBest(f.id), stars, goal: T('sg_' + goals[next][0], { n: goals[next][1] }) })
+      : T('facInfo', { best: factoryBest(f.id), mult: String(f.coins).replace('.', I18n.lang === 'es' ? ',' : '.') }) + ' · ' + stars;
     const play = $('play');
     play.classList.toggle('locked', !owned);
     play.disabled = !owned && save.coins < f.cost;
@@ -2642,7 +2970,14 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       d.querySelector('b').textContent = value;
       list.appendChild(d);
     };
-    for (const f of L.FACTORIES) { const own = save.factories.includes(f.id); stat(T('fac_' + f.id), own ? factoryBest(f.id) : T('ranksLocked'), !own); }
+    for (const f of L.FACTORIES) {
+      const own = save.factories.includes(f.id);
+      stat(T('fac_' + f.id), own ? factoryBest(f.id) : T('ranksLocked'), !own);
+      if (!own) continue;
+      const st = document.createElement('i');
+      st.textContent = M.factoryStars(save, f.id).map((x) => (x ? '★' : '☆')).join('');
+      list.lastChild.querySelector('b').appendChild(st);
+    }
     stat(T('ranksChallenge'), M.ensureChallenge(save, M.dayKey()).best);
     stat(T('ranksCombo'), save.stats.bestCombo || 0);
     showPanel('ranks');
@@ -2851,6 +3186,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     { id: 'gear', icon: { kind: KIND.GEAR } },
     { id: 'orders', icon: 'order' },
     { id: 'challenge', icon: 'challenge' },
+    { id: 'events', icon: 'event' },
+    { id: 'stars', icon: 'star' },
     { id: 'combo', icon: 'combo' },
     { id: 'hats', icon: 'hat' },
     { id: 'upgrades', icon: 'helmets' },
@@ -2870,6 +3207,14 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         shapeGlyph(SHAPE[1], 18, 32, 14, CRATE_COL[1]);
         ctx.fillStyle = C.hazard; ctx.fillRect(28, 26, 26, 5); ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(28, 35, 26, 5);
         ctx.fillStyle = C.hazard; ctx.fillRect(28, 35, 14, 5);
+      } else if (spec === 'event') {
+        ctx.fillStyle = C.gold; roundRect(8, 14, 48, 38, 6); ctx.fill();
+        ctx.fillStyle = '#16181c'; ctx.fillRect(8, 22, 48, 5);
+        ctx.font = `20px ${DISPLAY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('7', 32, 41);
+      } else if (spec === 'star') {
+        ctx.fillStyle = C.gold; ctx.beginPath();
+        for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 10 : 24; ctx.lineTo(32 + Math.cos(a) * rr, 34 + Math.sin(a) * rr); }
+        ctx.fill();
       } else if (spec === 'challenge') {
         ctx.fillStyle = CRATE_COL[1]; ctx.beginPath();
         for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 10 : 24; ctx.lineTo(32 + Math.cos(a) * rr, 34 + Math.sin(a) * rr); }
@@ -3034,7 +3379,26 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       list.appendChild(row);
     }
   }
+  function renderWeek() {
+    const w = M.ensureWeek(save, new Date()), ev = M.eventFor(), goal = M.WEEK_GOALS[w.event];
+    $('week-row').hidden = !save.tutorialDone;
+    $('week-name').textContent = T('ev_' + w.event);
+    $('week-goal').textContent = T('weekTitle', { goal: T('wg_' + goal.stat, { n: goal.target }), d: ev.daysLeft });
+    $('week-bar').style.width = `${(w.progress / goal.target) * 100}%`;
+    $('week-num').textContent = `${w.progress}/${goal.target}`;
+    const btn = $('week-claim');
+    const done = w.progress >= goal.target;
+    btn.textContent = w.claimed ? T('claimed') : T('weekClaim', { c: M.WEEK_REWARD.coins, g: M.WEEK_REWARD.gears });
+    btn.disabled = w.claimed || !done;
+    btn.classList.toggle('primary', done && !w.claimed);
+  }
+  $('week-claim').addEventListener('click', () => {
+    if (!M.claimWeek(save)) return;
+    persist(); Audio.reward(); Haptics.buzz('medium'); refreshMeta(); renderWeek();
+  });
+  $('event-chip').addEventListener('click', () => { Audio.unlock(); openMissions('title'); });
   function renderMissions() {
+    renderWeek();
     const list = $('mission-list');
     list.textContent = '';
     save.daily.missions.forEach((m, i) => {
@@ -3068,6 +3432,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   function checkNewDay(offerBonus) {
     const day = M.dayKey();
     M.ensureDaily(save, day);
+    M.ensureWeek(save, new Date());
     M.touchStreak(save, day);
     M.checkAchievements(save);
     persist();
@@ -3123,7 +3488,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   }
 
   // ------------------------------------------------------------------ "What's new": once per news set, for players who already played
-  const NEWS_ID = '1.8';
+  const NEWS_ID = '1.9';
   function showNewsOrTitle() {
     if (save.plays === 0) { save.newsSeen = NEWS_ID; persist(); }   // new players start with everything new anyway
     if (save.newsSeen === NEWS_ID) { showTitle(); return; }
@@ -3703,6 +4068,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
 
     if (spooky()) drawBats(now);
     if (frosty()) drawSnow(now);
+    if (portTheme()) drawWaves(now);
+    if (labTheme()) drawBubbles(now);
     const bins = g ? g.bins : [0, 1, 2];
     const flashOn = g && g.shiftFlash > 0 && Math.floor(g.shiftFlash * 8) % 2 === 0;
 
@@ -3770,6 +4137,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       for (const c of g.crates) if (!c.falling) { drawCrate(c); if (c.grace && c.kind !== KIND.BOMB) graceBadge(c); }
       for (const c of g.crates) if (c.falling) drawCrate(c);
     }
+    if (mineTheme()) drawDarkness(now);
     // entry door and exit chute, drawn over the crates so they come out of and go into the wall
     hazardStripe(0, BELT_Y - 64, 26, 64, 0);
     hazardStripe(W - 26, BELT_Y - 64, 26, 64, 0);
