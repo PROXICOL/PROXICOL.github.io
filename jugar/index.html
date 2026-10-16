@@ -327,6 +327,16 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
 :root.halloween .title-card::after { content: ""; position: absolute; top: 10px; right: 22px; width: 22px; height: 56px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 100'%3E%3Cline x1='20' y1='0' x2='20' y2='66' stroke='%23d8d2e6' stroke-opacity='.55' stroke-width='1.5'/%3E%3Cg stroke='%230a0810' stroke-width='3' stroke-linecap='round' fill='none'%3E%3Cpath d='M14 78 L4 70 L1 60 M14 82 L3 82 L0 90 M15 86 L6 94 L5 100 M26 78 L36 70 L39 60 M26 82 L37 82 L40 90 M25 86 L34 94 L35 100'/%3E%3C/g%3E%3Cellipse cx='20' cy='83' rx='9' ry='11' fill='%230a0810'/%3E%3Ccircle cx='20' cy='70' r='6' fill='%230a0810'/%3E%3Ccircle cx='17.5' cy='69' r='1.6' fill='%23ff9a2e'/%3E%3Ccircle cx='22.5' cy='69' r='1.6' fill='%23ff9a2e'/%3E%3C/svg%3E") top center / contain no-repeat; animation: spider 3.4s ease-in-out infinite; pointer-events: none; }
 @keyframes spider { 0%, 100% { transform: translateY(-10px); } 50% { transform: translateY(4px); } }
 @media (prefers-reduced-motion: reduce) { :root.halloween .title-card::after { animation: none; } }
+/* test build only */
+.test-chip { background: #e5484d; color: #fff; font-family: var(--display); font-size: 13px; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.setting.test-row { gap: 6px; padding-left: 4px; }
+.setting.test-row > span { display: none; }
+.setting.test-row .btn.toggle { flex: 1 1 0; overflow: hidden; text-overflow: ellipsis; }
+.setting.test-row .btn.toggle { min-width: 0; padding-left: 8px; padding-right: 8px; white-space: nowrap; font-size: 13px; }
+@media (orientation: landscape) and (max-height: 400px) {
+  .test-chip { font-size: 11px; padding: 3px 8px; }
+  .setting.test-row .btn.toggle { font-size: 12px; padding: 5px 7px; }
+}
 </style></head><body>
 <div id="stage">
   <canvas id="game" aria-label="Belt Panic game area. Press 1, 2 or 3 (or tap the left, middle or right third) to kick a crate into the bin below."></canvas>
@@ -339,7 +349,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       <div class="stripe"></div>
       <h1>BELT <span>PANIC</span></h1>
       <p class="tagline" data-i18n="tagline"></p>
-      <div class="chips"><span class="season-chip" id="season-chip" data-i18n="seasonChip" hidden></span><span class="streak-chip" id="streak-chip" hidden></span><button type="button" class="challenge-chip" id="challenge-chip" data-i18n="challengeChip" hidden></button><button type="button" class="event-chip" id="event-chip" hidden></button></div>
+      <div class="chips"><span class="test-chip" id="test-chip" hidden>PRUEBAS</span><span class="season-chip" id="season-chip" data-i18n="seasonChip" hidden></span><span class="streak-chip" id="streak-chip" hidden></span><button type="button" class="challenge-chip" id="challenge-chip" data-i18n="challengeChip" hidden></button><button type="button" class="event-chip" id="event-chip" hidden></button></div>
       <div class="factory-pick">
         <button type="button" class="btn ghost arrow" id="fac-prev" data-i18n-label="prevFactory">&#8249;</button>
         <div class="fac-text"><b id="fac-name"></b><span id="fac-info"></span></div>
@@ -450,6 +460,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
         <div class="setting"><span data-i18n="saver"></span><button type="button" class="btn toggle" id="set-saver"></button></div>
         <div class="setting" id="feedback-row" hidden><span data-i18n="feedback"></span><button type="button" class="btn toggle" id="set-feedback" data-i18n="send"></button></div>
         <div class="setting" hidden><span data-i18n="theme"></span><button type="button" class="btn toggle" id="set-theme"></button></div>
+        <div class="setting test-row" id="test-row" hidden><span>Pruebas</span><button type="button" class="btn toggle" id="set-test-event"></button><button type="button" class="btn toggle" id="set-test-up"></button></div>
       </div>
       <div class="row">
         <button type="button" class="btn" id="set-howto"><span data-i18n="howTo"></span><b class="new-tag" id="howto-new" data-i18n="newTag" hidden></b></button>
@@ -523,7 +534,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   </section>
 </div>
 
-<script>window.BELT_VERSION="1.9.0";</script><script>// Belt Panic — text in English and Spanish. The phone's language picks one; Settings can change it.
+<script>window.BELT_VERSION="1.9.1";</script><script>// Belt Panic — text in English and Spanish. The phone's language picks one; Settings can change it.
 (function () {
   'use strict';
   const STR = {
@@ -629,7 +640,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       sk_kicker_steel: 'Industrial', sk_kicker_chrome: 'Chrome', sk_kicker_gold: 'Gold', sk_kicker_robot: 'Robot',
       skEquip: 'Use', skEquipped: 'In use', skLevel: 'Level {n}', skinUnlocked: 'New style unlocked!',
       newsTitle: "WHAT'S NEW", newsVer: 'Version {v}', newsOk: "Let's play!",
-      newsItems: 'Weekly events with a goal and prize|3 stars in every factory|New factories: Harbor, Laboratory and Mine',
+      newsItems: 'Weekly events with a goal and prize|3 stars in every factory|New factories: Harbor, Laboratory and Mine|New doors for each factory and music in the menus',
       updTitle: 'Update ready', updText: 'A new version of Belt Panic has been downloaded. Restart to use it (it takes a few seconds).', updNow: 'Restart now', updLater: 'Later',
       tutTap: 'Tap here!', tutTapKey: 'Tap here or press {k}',
       tutGold: 'Gold crates fit any bin: +5 points', tutBomb: 'Never kick a bomb. Let it roll away!',
@@ -737,7 +748,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       sk_kicker_steel: 'Industrial', sk_kicker_chrome: 'Cromado', sk_kicker_gold: 'Dorado', sk_kicker_robot: 'Robot',
       skEquip: 'Usar', skEquipped: 'En uso', skLevel: 'Nivel {n}', skinUnlocked: '¡Aspecto nuevo desbloqueado!',
       newsTitle: 'NOVEDADES', newsVer: 'Versión {v}', newsOk: '¡A jugar!',
-      newsItems: 'Eventos semanales con meta y premio|3 estrellas en cada fábrica|Fábricas nuevas: Puerto, Laboratorio y Mina',
+      newsItems: 'Eventos semanales con meta y premio|3 estrellas en cada fábrica|Fábricas nuevas: Puerto, Laboratorio y Mina|Puertas nuevas en cada fábrica y música en los menús',
       updTitle: 'Actualización lista', updText: 'Se descargó una versión nueva de Belt Panic. Reinicia para usarla (tarda unos segundos).', updNow: 'Reiniciar ahora', updLater: 'Más tarde',
       tutTap: '¡Toca aquí!', tutTapKey: 'Toca aquí o presiona {k}',
       tutGold: 'Las cajas doradas sirven en cualquier contenedor: +5', tutBomb: 'Nunca patees una bomba. ¡Déjala pasar!',
@@ -1577,6 +1588,7 @@ function ensureSkins(save) {
 function skinOwned(save, cat, id) {
   const s = SKINS[cat].find((x) => x.id === id);
   if (!s) return false;
+  if (save.allSkins) return true;   // test build
   if (s.level) return levelInfo(save.xp || 0).level >= s.level;
   return s.cost === 0 || (save.skinsOwned || []).includes(cat + ':' + id);
 }
@@ -1651,10 +1663,12 @@ function mondayOf(date) {
 function eventFor(date) {
   const mon = mondayOf(date || new Date());
   const weeks = Math.round((mon - new Date(2026, 0, 5)) / (7 * 86400000));   // 5 Jan 2026 was a Monday
-  const id = EVENTS[((weeks % EVENTS.length) + EVENTS.length) % EVENTS.length];
+  let id = EVENTS[((weeks % EVENTS.length) + EVENTS.length) % EVENTS.length];
+  const forced = typeof globalThis !== 'undefined' ? globalThis.BELT_EVENT : null;   // test build: event picked in Settings
+  if (forced && EVENTS.includes(forced)) id = forced;
   const end = new Date(mon); end.setDate(end.getDate() + 7);
   const daysLeft = Math.max(1, Math.ceil((end - (date || new Date())) / 86400000));
-  return { id, key: dayKey(mon), daysLeft, goal: WEEK_GOALS[id] };
+  return { id, key: dayKey(mon) + (forced && EVENTS.includes(forced) ? '|' + forced : ''), daysLeft, goal: WEEK_GOALS[id] };
 }
 function ensureWeek(save, date) {
   const ev = eventFor(date);
@@ -1782,6 +1796,17 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   M.ensureGears(save);
   M.ensureSkins(save);
   M.ensureLevel(save);
+  // test build (separate "Belt Panic PRUEBAS" app): everything unlocked, plenty of coins and gears, test options in Settings
+  const PRUEBAS = !!window.BELT_PRUEBAS;
+  if (PRUEBAS) {
+    save.tutorialDone = true;
+    save.factories = L.FACTORIES.map((f) => f.id);
+    save.allSkins = true;
+    if (!save.testInit) { for (const u of L.UPGRADES) save.upgrades[u.id] = u.max; save.testInit = 1; }
+    save.coins = Math.max(save.coins, 50000);
+    save.gears = Math.max(save.gears, 99);
+    window.BELT_EVENT = save.testEvent || null;
+  }
   // Google Form for comments (prefilled link; VERSION and TELEFONO are replaced). Empty = button hidden.
   const FEEDBACK_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdFDXVmzKV16kQdQ_gaIIoMSkAD4csgP5npNcm8h7LJ__Xflw/viewform?usp=pp_url&entry.1890597761=VERSION&entry.236920487=TELEFONO';
   const SHARE_URL = 'https://proxicol.github.io/beltpanic/';
@@ -1799,6 +1824,15 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   }
   const SEASON = currentSeason();
   let theme = 'classic';
+  // entry / exit doors (drawn further down)
+  const DW = 46;                    // door width
+  const DOOR_TOP = BELT_Y - 72;     // top of the opening
+  let exitFlash = 0;                // red light after a crate escapes
+  const flaps = [[0, 0, 0], [0, 0, 0]];   // curtain strip angles, entry and exit
+  let airlock = [0, 0];
+  const DY0 = DOOR_TOP - 30, DH = BELT_Y + 4 - DY0, DWS = DW + 12;   // area the still frame covers
+  let doorCache = { key: '' };
+  const glows = new Map();
   let viewFactory = save.factories.includes(save.factory) ? save.factory : 'classic';   // factory shown on the title
   function applyTheme() {
     const f = viewFactory;
@@ -1810,7 +1844,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     root.toggle('f-port', theme === 'port');
     root.toggle('f-lab', theme === 'lab');
     root.toggle('f-mine', theme === 'mine');
-    readPalette();   // (callers switch the music: Audio.setSong(theme))
+    readPalette();
   }
   applyTheme();
   const spooky = () => theme === 'halloween';
@@ -1969,7 +2003,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     let ducked = false;
     let noiseBuf = null;
     const SFX_VOL = 0.5;
-    const MUSIC_VOL = 0.16;
+    const MUSIC_VOL = 0.34;   // was 0.16: players found the music too quiet
     function ensure() {
       if (ctx) return;
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -1977,8 +2011,12 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       ctx = new AC();
       sfx = ctx.createGain();
       musicBus = ctx.createGain();
-      sfx.connect(ctx.destination);
-      musicBus.connect(ctx.destination);
+      // a gentle limiter so the louder music and the effects never clip together
+      const master = ctx.createDynamicsCompressor();
+      master.threshold.value = -12; master.knee.value = 10; master.ratio.value = 4; master.attack.value = 0.005; master.release.value = 0.2;
+      master.connect(ctx.destination);
+      sfx.connect(master);
+      musicBus.connect(master);
       noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.5), ctx.sampleRate);
       const d = noiseBuf.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -2031,6 +2069,10 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       port: { roots: [43, 48, 45, 50], lead: [[74, 0, 0, 79, 0, 0, 76, 0], [72, 0, 0, 76, 0, 0, 79, 0], [72, 0, 0, 77, 0, 0, 74, 0], [74, 0, 0, 78, 0, 0, 81, 0]], wave: 'sine' },
       lab: { roots: [45, 41, 48, 43], lead: [[69, 72, 76, 72, 69, 72, 76, 81], [65, 69, 72, 69, 65, 69, 72, 77], [72, 76, 79, 76, 72, 76, 79, 84], [67, 71, 74, 71, 67, 71, 74, 79]], wave: 'triangle' },
       mine: { roots: [36, 39, 34, 38], lead: [[60, 0, 63, 0, 0, 0, 67, 0], [63, 0, 66, 0, 0, 0, 70, 0], [58, 0, 62, 0, 0, 0, 65, 0], [62, 0, 65, 0, 0, 0, 69, 0]], wave: 'triangle' },
+      // menus: a calm, different tune (F, Em, Dm, C with a soft arpeggio and a slow melody)
+      menu: { menu: true, roots: [41, 40, 38, 36],
+        arp: [[65, 69, 72, 76, 72, 69, 65, 72], [64, 67, 71, 74, 71, 67, 64, 71], [62, 65, 69, 72, 69, 65, 62, 69], [60, 64, 67, 71, 67, 64, 60, 67]],
+        lead: [[81, 0, 0, 0, 79, 0, 76, 0], [79, 0, 0, 0, 76, 0, 74, 0], [77, 0, 0, 0, 74, 0, 72, 0], [76, 0, 0, 0, 0, 0, 0, 0]], wave: 'sine' },
       candy: { roots: [48, 45, 41, 43], lead: [[72, 0, 76, 0, 79, 0, 84, 0], [69, 0, 72, 0, 76, 0, 81, 0], [65, 0, 69, 0, 72, 0, 77, 0], [67, 0, 71, 0, 74, 0, 79, 0]], wave: 'triangle' },
     };
     let song = SONGS.classic;
@@ -2047,6 +2089,16 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         const bar = Math.floor(step / 8) % 4;
         const e = step % 8;
         const len = 60 / tempo / 2;
+        if (song.menu) {
+          if (e === 0 || e === 4) tone(midi(song.roots[bar] - 12 + (e === 4 ? 7 : 0)), len * 3.5, 'sine', 0.5, 0, nextAt, musicBus);
+          tone(midi(song.arp[bar][e]), len * 1.8, 'triangle', 0.11, 0, nextAt, musicBus);
+          if (e % 2 === 1) noise(0.03, 0.05, nextAt, musicBus, 8000);
+          if (loops % 2 === 1 && song.lead[bar][e]) tone(midi(song.lead[bar][e]), len * 3, 'sine', 0.16, 0, nextAt, musicBus);
+          nextAt += len;
+          step += 1;
+          if (step % 32 === 0) loops += 1;
+          continue;
+        }
         tone(midi(song.roots[bar] + BASS[e]), len * 0.9, 'square', 0.22, 0, nextAt, musicBus);
         if (e % 4 === 0) tone(120, 0.16, 'sine', 0.55, 0.3, nextAt, musicBus);
         if (e % 2 === 1) noise(0.04, 0.12, nextAt, musicBus, 6000);
@@ -2074,6 +2126,13 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         scheduleMusic();
       },
       stopMusic() { playing = false; if (timer) clearInterval(timer); timer = null; },
+      // menu tune (title, game over and the panels around them); does nothing if it is already playing
+      menu() { if (playing && song === SONGS.menu) return; this.stopMusic(); song = SONGS.menu; tempo = 92; this.startMusic(); },
+      // the factory's own tune for a shift
+      game(name) { this.stopMusic(); song = SONGS[name] || SONGS.classic; this.startMusic(); },
+      // app in the background: silence everything until it comes back
+      sleep(on) { if (!ctx) return; if (on) ctx.suspend(); else ctx.resume(); },
+      get song() { return song === SONGS.menu ? 'menu' : 'game'; },
       get musicPlaying() { return playing; },
       kick() { tone(140, 0.09, 'square', 0.18, 0.5); },
       good(combo) { tone(520 + Math.min(combo, 24) * 28, 0.12, 'triangle', 0.22, 1.5); },
@@ -2186,6 +2245,13 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     b.beginPath();
     for (let x = 20; x < W; x += 64) { b.moveTo(x + 7, BELT_Y + 30); b.arc(x, BELT_Y + 30, 7, 0, Math.PI * 2); }
     b.fill();
+    // the dark inside of both doors is still, so it lives in the background too
+    const main = ctx;
+    ctx = b;
+    try {
+      doorStatic(doorKind(), 'back');
+      ctx.save(); ctx.translate(W, 0); ctx.scale(-1, 1); doorStatic(doorKind(), 'back'); ctx.restore();
+    } finally { ctx = main; }
     paintBgLayer();
   }
   // Halloween night: moon, stars and cobwebs (static, part of the cached background)
@@ -2565,7 +2631,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     persist();
     showPanel(null);
     Platform.start();
-    Audio.startMusic();
+    Audio.game(theme);
   }
 
   // ------------------------------------------------------------------ effects
@@ -2596,6 +2662,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
         case 'gold': Audio.gold(); Haptics.buzz('medium'); if (k >= 0) binBounce[k] = 0.3; burst(e.x, 360, C.gold, 26, 340); break;
         case 'boom': Audio.boom(); Haptics.buzz('heavy'); burst(e.x, 380, '#ff7a3d', 40, 420); burst(e.x, 380, '#555', 20, 200); shake = 0.45; break;
         case 'miss':
+          if (e.reason === 'escaped') exitFlash = 0.9;
           if (e.reason !== 'bomb') { Audio.miss(); Haptics.buzz('error'); }
           if (k >= 0) binBounce[k] = 0.2;
           shake = Math.max(shake, 0.3);
@@ -2631,13 +2698,13 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
           burst(e.x, 360, C.gold, 22, 320);
           floatText(e.x, 300, T('gearCaught'), C.gold, 28, 1.2);
           break;
-        case 'orderNew': Audio.good(1); floatText(150, 192, T('orderNew'), C.hazard, 20, 1.1); break;
+        case 'orderNew': Audio.good(1); floatText(170, 192, T('orderNew'), C.hazard, 20, 1.1); break;
         case 'orderDone':
           Audio.reward(); Haptics.buzz('medium');
           burst(130, 130, C.gold, 20, 240);
-          floatText(150, 192, T('orderDone', { n: e.order.reward }), C.gold, 21, 1.5);
+          floatText(170, 192, T('orderDone', { n: e.order.reward }), C.gold, 21, 1.5);
           break;
-        case 'orderFail': floatText(150, 192, T('orderFail'), C.muted, 18, 1.1); break;
+        case 'orderFail': floatText(170, 192, T('orderFail'), C.muted, 18, 1.1); break;
         case 'hatEarned':
           Audio.level(); Haptics.buzz('medium');
           burst(W - 40 - (game.lives - 1) * 40, 40, C.hazard, 24, 260);
@@ -2706,7 +2773,10 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       startOrRestart();
     }
   });
+  // browsers start sound only after a first touch; the menu tune starts then
+  document.addEventListener('pointerdown', () => Audio.unlock(), { once: true, capture: true });
   document.addEventListener('visibilitychange', () => {
+    Audio.sleep(document.hidden);
     if (document.hidden) Notify.reschedule();
     if (document.hidden && mode === 'play') pause(true);
     if (!document.hidden && mode === 'title' && panelOpen('title')) checkNewDay(true);
@@ -2714,7 +2784,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
 
   function pause(on) {
     if (on && mode === 'play') { mode = 'paused'; Platform.stop(); Audio.stopMusic(); showPanel('pause'); }
-    else if (!on && mode === 'paused') { mode = 'play'; lastT = performance.now(); showPanel(null); Platform.start(); Audio.startMusic(); }
+    else if (!on && mode === 'paused') { mode = 'play'; lastT = performance.now(); showPanel(null); Platform.start(); Audio.game(theme); }
   }
 
   // ------------------------------------------------------------------ menus (DOM)
@@ -2769,7 +2839,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     $('season-chip').hidden = !spooky();
     // at most three chips under the logo: challenge, event, streak, then the season
     let shown = 0;
-    for (const id of ['challenge-chip', 'event-chip', 'streak-chip', 'season-chip']) { if (!$(id).hidden) { shown += 1; if (shown > 3) $(id).hidden = true; } }
+    $('test-chip').hidden = !PRUEBAS;
+    for (const id of ['test-chip', 'challenge-chip', 'event-chip', 'streak-chip', 'season-chip']) { if (!$(id).hidden) { shown += 1; if (shown > 3) $(id).hidden = true; } }
   }
 
   function applyLanguage() {
@@ -2786,7 +2857,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     breakPending = true;
     Platform.stop();
     Platform.idle();
-    Audio.stopMusic();
+    Audio.menu();
     const total = L.coinsFor(game);
     lastEarned = total - game.paid;
     game.paid = total;
@@ -2928,7 +2999,6 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     viewFactory = ids[(ids.indexOf(viewFactory) + dir + ids.length) % ids.length];
     if (save.factories.includes(viewFactory)) { save.factory = viewFactory; persist(); }
     applyTheme();
-    Audio.setSong(theme);
     buildBackground(px);
     demo = null;
     refreshMeta();
@@ -3107,13 +3177,13 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     const cost = L.continueCost(game);
     if (cost > 0 && save.gears >= cost) {
       // pay with Engranes
-      if (M.spendGears(save, cost) && L.revive(game)) { persist(); refreshMeta(); mode = 'play'; lastT = performance.now(); showPanel(null); Platform.start(); Audio.startMusic(); }
+      if (M.spendGears(save, cost) && L.revive(game)) { persist(); refreshMeta(); mode = 'play'; lastT = performance.now(); showPanel(null); Platform.start(); Audio.game(theme); }
       return;
     }
     $('continue').disabled = true;
     const ok = await Platform.rewarded();
     $('continue').disabled = false;
-    if (ok && game && L.revive(game)) { mode = 'play'; lastT = performance.now(); showPanel(null); Platform.start(); Audio.startMusic(); }
+    if (ok && game && L.revive(game)) { mode = 'play'; lastT = performance.now(); showPanel(null); Platform.start(); Audio.game(theme); }
     else $('continue').hidden = true;   // no ad available (e.g. before monetisation is enabled): hide the offer
   });
   $('double').addEventListener('click', async () => {
@@ -3261,11 +3331,30 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     if (!save.seen.guide) { save.seen.guide = 1; persist(); refreshMeta(); }
     showPanel('guide');
   }
+  // ---- test build options
+  const TEST_EVENTS = [null].concat(M.EVENTS);
+  function refreshTest() {
+    $('test-row').hidden = !PRUEBAS;
+    if (!PRUEBAS) return;
+    $('set-test-event').textContent = 'Ev: ' + ({ bombs: 'bombas', gold: 'oro', speed: 'turbo', orders: 'pedidos', mystery: 'misterio', gears: 'engranes' }[save.testEvent] || 'auto');
+    const maxed = L.UPGRADES.every((u) => (save.upgrades[u.id] || 0) >= u.max);
+    $('set-test-up').textContent = maxed ? 'Mej: máx' : 'Mej: 0';
+  }
+  $('set-test-event').addEventListener('click', () => {
+    save.testEvent = TEST_EVENTS[(TEST_EVENTS.indexOf(save.testEvent || null) + 1) % TEST_EVENTS.length];
+    window.BELT_EVENT = save.testEvent || null;
+    persist(); refreshMeta(); refreshTest();
+  });
+  $('set-test-up').addEventListener('click', () => {
+    const maxed = L.UPGRADES.every((u) => (save.upgrades[u.id] || 0) >= u.max);
+    for (const u of L.UPGRADES) save.upgrades[u.id] = maxed ? 0 : u.max;
+    persist(); refreshMeta(); refreshTest();
+  });
+  refreshTest();
   $('set-theme').addEventListener('click', () => {
     save.theme = spooky() ? 'classic' : 'season';
     persist();
     applyTheme();
-    Audio.setSong(theme);
     buildBackground(px);
     refreshMeta();
   });
@@ -3482,6 +3571,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   });
   function showTitle() {
     showPanel('title');
+    Audio.menu();
     if (Updater.offerIfReady()) return;
     checkNewDay(true);
     maybeAskReminders();
@@ -3617,6 +3707,217 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     ctx.fill();
   }
 
+  // ---- entry / exit doors, one style per factory. Drawn for the left door; the right one is the same drawing mirrored.
+  // Back layer (before the crates): the dark opening. Front layer (after the crates): the frame, so crates come out of the wall.
+  function doorKind() {
+    return { frozen: 'cold', candy: 'candy', port: 'container', lab: 'airlock', mine: 'timber' }[theme] || 'tunnel';
+  }
+  // crates in the door's own (mirrored) coordinates
+  function doorCrates(exit) {
+    const out = [];
+    if (game) for (const c of game.crates) if (!c.falling) { const x = exit ? W - c.x : c.x; if (x < DW + 120) out.push(x); }
+    return out;
+  }
+  function recess(x1, top, deep, mid) {
+    const gr = ctx.createLinearGradient(0, 0, x1, 0);
+    gr.addColorStop(0, deep); gr.addColorStop(1, mid);
+    ctx.fillStyle = gr; ctx.fillRect(0, top, x1, BELT_Y + 30 - top);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    for (let x = 6; x < x1; x += 14) ctx.fillRect(x, BELT_Y + 2, 7, 10);
+  }
+  function shade(x1, top) {
+    const gr = ctx.createLinearGradient(0, 0, x1, 0);
+    gr.addColorStop(0, 'rgba(0,0,0,0.92)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)');
+    ctx.fillStyle = gr; ctx.fillRect(0, top, x1, BELT_Y - top);
+  }
+  function post(x, y1, y2, col, hi) {
+    ctx.fillStyle = col; ctx.fillRect(x, y1, 8, y2 - y1);
+    ctx.fillStyle = hi; ctx.fillRect(x + 1, y1, 2, y2 - y1);
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(x + 6, y1, 2, y2 - y1);
+  }
+  function beacon(x, y, col, on, now) {
+    ctx.fillStyle = '#2a2f36'; ctx.fillRect(x - 7, y - 3, 14, 4);
+    if (on) {
+      // the glow stays below the order card (which ends at y 160)
+      const gl = glow(col);
+      ctx.save(); ctx.beginPath(); ctx.rect(x - 30, y - 5, 60, 40); ctx.clip();
+      if (gl) { ctx.globalAlpha = (0.35 + 0.65 * Math.abs(Math.sin(now / 110))) * 0.55; ctx.drawImage(gl, x - 26, y - 33, 52, 52); ctx.globalAlpha = 1; }
+      ctx.restore();
+    }
+    ctx.fillStyle = col; ctx.globalAlpha = on ? 1 : 0.35;
+    ctx.beginPath(); ctx.arc(x, y - 4, 6, Math.PI, 0); ctx.fill(); ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(x - 3, y - 8, 2, 3);
+  }
+  // swinging curtain strips: each strip is pushed by the crates and falls back
+  function curtain(exit, xs, col, edge, dt) {
+    const dir = exit ? -1 : 1, hy = DOOR_TOP - 6, L = BELT_Y - hy - 2;
+    for (let i = 0; i < 3; i++) {
+      const hx = DW - 8 + i * 6;
+      let a = flaps[exit ? 1 : 0][i];
+      a = Math.max(0, a - (a * 5 + 0.4) * dt);
+      // smallest angle at which the strip does not go through a crate
+      for (const cx of xs) {
+        for (let t = a; t < 1.45; t += 0.03) {
+          let hit = false;
+          for (let s = 0.3; s <= 1.001; s += 0.1) {
+            const px = hx + dir * Math.sin(t) * L * s, py = hy + Math.cos(t) * L * s;
+            if (py > BELT_Y - CRATE && px > cx - CRATE / 2 && px < cx + CRATE / 2) { hit = true; break; }
+          }
+          if (!hit) { a = t; break; }
+        }
+      }
+      flaps[exit ? 1 : 0][i] = a;
+      const t = dir * a + Math.sin(performance.now() / 650 + i * 1.7) * 0.02;
+      ctx.save(); ctx.translate(hx, hy); ctx.rotate(-t);
+      ctx.fillStyle = col; ctx.fillRect(-4, 0, 8, L);
+      ctx.fillStyle = edge; ctx.fillRect(-4, 0, 1.5, L);
+      ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(2.5, 0, 1.5, L);
+      ctx.restore();
+    }
+  }
+  function chevrons(x0, y, n, dir, col, now, w = 9) {
+    const step = Math.floor(now / 140);
+    for (let k = 0; k < n; k++) {
+      const idx = dir > 0 ? k : n - 1 - k;
+      ctx.globalAlpha = (step - idx) % n === 0 ? 1 : 0.22;
+      ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath();
+      const x = x0 + k * w;
+      ctx.moveTo(x - dir * 3, y - 5); ctx.lineTo(x + dir * 3, y); ctx.lineTo(x - dir * 3, y + 5); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  // The still parts of a door are drawn once per factory into small images; only what moves is drawn every frame.
+  function doorStatic(kind, layer) {
+    const top = DOOR_TOP - 24, bot = BELT_Y + 2;   // the belt runs through the frame
+    const deep = { tunnel: ['#030405', '#20262e'], cold: ['#0a1620', '#25404f'], candy: ['#1a0b08', '#4a2418'], container: ['#050608', '#1d2329'], airlock: ['#05040c', '#1c1a33'], timber: ['#000000', '#14100c'] }[kind];
+    const open = kind === 'tunnel' ? DOOR_TOP + 6 : DOOR_TOP;
+    if (layer === 'back') { recess(DW - 10, open, deep[0], deep[1]); return; }
+    if (layer === 'a') shade(DW - 10, open);
+    if (kind === 'tunnel' && layer === 'a') {
+      // concrete wall around a rounded opening
+      ctx.fillStyle = '#4b525c';
+      ctx.beginPath(); ctx.rect(0, top, DW + 2, BELT_Y - top);
+      ctx.moveTo(0, BELT_Y); ctx.lineTo(0, DOOR_TOP + 6); ctx.lineTo(DW - 26, DOOR_TOP + 6);
+      ctx.arcTo(DW - 10, DOOR_TOP + 6, DW - 10, DOOR_TOP + 22, 16); ctx.lineTo(DW - 10, BELT_Y); ctx.closePath();
+      ctx.fill('evenodd');
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1;
+      for (let y = top + 12; y < bot; y += 12) { ctx.beginPath(); ctx.moveTo(DW - 10, y); ctx.lineTo(DW + 2, y); ctx.stroke(); }
+      ctx.strokeStyle = C.hazard; ctx.lineWidth = 3; ctx.beginPath();
+      ctx.moveTo(DW - 8, BELT_Y); ctx.lineTo(DW - 8, DOOR_TOP + 22); ctx.arcTo(DW - 8, DOOR_TOP + 4, DW - 26, DOOR_TOP + 4, 18); ctx.lineTo(0, DOOR_TOP + 4); ctx.stroke();
+      ctx.fillStyle = '#111418'; roundRect(2, top + 2, DW - 2, 18, 4); ctx.fill();
+    } else if (kind === 'cold' && layer === 'a') {
+      ctx.fillStyle = '#e4edf3'; ctx.fillRect(0, top, DW + 4, 24);
+      ctx.fillStyle = '#c3d3de'; for (let x = 10; x < DW + 4; x += 12) ctx.fillRect(x, top, 1, 24);
+      ctx.fillStyle = '#ffffff';                                         // icicles
+      for (let x = 4; x < DW; x += 7) { ctx.beginPath(); ctx.moveTo(x, top + 24); ctx.lineTo(x + 4, top + 24); ctx.lineTo(x + 2, top + 30 + (x % 3) * 3); ctx.fill(); }
+      post(DW - 10, top + 24, bot, '#d5e2ea', '#ffffff');
+      ctx.fillStyle = '#2d3a44'; ctx.fillRect(DW - 12, top + 24, 2, bot - top - 24);
+    } else if (kind === 'candy' && layer === 'a') {
+      ctx.save(); ctx.beginPath(); ctx.rect(DW - 10, top + 6, 10, bot - top - 6); ctx.rect(0, top + 6, DW, 12); ctx.clip();
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, top, DW + 4, bot - top);
+      ctx.fillStyle = '#e8364f';
+      for (let y = top - 40; y < bot; y += 14) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(DW, y + 30); ctx.lineTo(DW, y + 37); ctx.lineTo(0, y + 7); ctx.fill(); }
+      ctx.restore();
+      const drops = ['#ff5fa2', '#7bdc6b', '#ffd34d'];
+      for (let i = 0; i < 3; i++) { ctx.fillStyle = drops[i]; ctx.beginPath(); ctx.arc(8 + i * 15, top + 6, 7, Math.PI, 0); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(5 + i * 15, top + 1, 3, 2); }
+    } else if (kind === 'container' && layer === 'a') {
+      ctx.fillStyle = '#c4572a'; ctx.fillRect(0, top, DW + 2, 24); ctx.fillRect(DW - 10, top, 12, bot - top);
+      ctx.fillStyle = 'rgba(0,0,0,0.22)'; for (let x = 3; x < DW; x += 6) ctx.fillRect(x, top, 2, 24);
+      ctx.fillStyle = '#8f3d1d'; ctx.fillRect(0, top + 20, DW + 2, 4);
+      ctx.fillStyle = '#d9d2c4'; ctx.fillRect(DW - 7, top + 26, 3, bot - top - 30);      // locking bar
+      ctx.fillStyle = '#9aa0a6'; ctx.fillRect(DW - 9, top + 60, 7, 4); ctx.fillRect(DW - 9, top + 100, 7, 4);
+      ctx.fillStyle = '#e6b34a'; ctx.fillRect(0, top, 8, 8); ctx.fillRect(DW - 6, top, 8, 8);                // corner castings
+      ctx.fillStyle = '#222'; ctx.fillRect(2, top + 2, 4, 3); ctx.fillRect(DW - 4, top + 2, 4, 3);
+    } else if (kind === 'airlock' && layer === 'b') {
+      ctx.fillStyle = '#262c45'; ctx.fillRect(0, top, DW + 4, 24);
+      ctx.fillStyle = C.hazard; ctx.fillRect(0, top + 20, DW + 4, 3);
+      post(DW - 8, top + 24, bot, '#343e5e', '#56638f');
+    } else if (kind === 'timber' && layer === 'a') {
+      const log = (x, y, w, h) => { ctx.fillStyle = '#6b4626'; ctx.fillRect(x, y, w, h); ctx.fillStyle = 'rgba(0,0,0,0.25)'; if (w > h) { ctx.fillRect(x, y + h * 0.35, w, 1); ctx.fillRect(x, y + h * 0.7, w, 1); } else { ctx.fillRect(x + w * 0.35, y, 1, h); ctx.fillRect(x + w * 0.7, y, 1, h); } };
+      log(DW - 11, top + 14, 11, bot - top - 14);
+      log(0, top + 4, DW + 8, 14);
+      ctx.fillStyle = '#3a2614'; ctx.beginPath(); ctx.arc(DW + 3, top + 11, 4, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  function doorSprite(fn) {
+    const cv = document.createElement('canvas');
+    cv.width = Math.ceil(DWS * px); cv.height = Math.ceil(DH * px);
+    const c2 = cv.getContext('2d');
+    if (!c2) return null;
+    const main = ctx;
+    ctx = c2;
+    try { ctx.setTransform(px, 0, 0, px, 0, -DY0 * px); fn(); } finally { ctx = main; }
+    return cv;
+  }
+  function glow(col) {   // soft round light, drawn once per colour
+    if (!glows.has(col)) {
+      const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+      const c2 = cv.getContext('2d');
+      if (c2) { const gr = c2.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); c2.fillStyle = gr; c2.fillRect(0, 0, 64, 64); }
+      glows.set(col, c2 ? cv : null);
+    }
+    return glows.get(col);
+  }
+  function blit(s) { if (s) ctx.drawImage(s, 0, DY0, DWS, DH); }
+  function drawDoor(exit, front, now, dt) {
+    const kind = doorKind();
+    const key = kind + '|' + px + '|' + theme;
+    if (doorCache.key !== key) {
+      doorCache = { key, a: doorSprite(() => doorStatic(kind, 'a')), b: kind === 'airlock' ? doorSprite(() => doorStatic(kind, 'b')) : null };
+    }
+    const xs = doorCrates(exit), near = xs.some((x) => x < DW + 30);
+    const top = DOOR_TOP - 24;
+    ctx.save();
+    if (exit) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+    if (!front) {
+      if (kind === 'cold') {
+        // cold air rolling out along the floor, behind the crates so it never hides them
+        ctx.fillStyle = '#e8f6ff';
+        for (let i = 0; i < 5; i++) {
+          const p = (now / 2400 + i / 5) % 1;
+          ctx.globalAlpha = 0.28 * (1 - p);
+          ctx.beginPath(); ctx.ellipse(DW + p * 60, BELT_Y - 4 - p * 6, 8 + p * 14, 4 + p * 4, 0, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+      return;
+    }
+    blit(doorCache.a);
+    if (kind === 'tunnel') {
+      chevrons(exit ? 10 : 12, top + 11, 4, exit ? -1 : 1, exit && exitFlash > 0 ? '#ff4040' : (exit ? '#3ddc84' : C.hazard), now);
+    } else if (kind === 'cold') {
+      curtain(exit, xs, 'rgba(200,235,255,0.5)', 'rgba(255,255,255,0.8)', dt);
+    } else if (kind === 'container') {
+      beacon(DW / 2 - 2, top + 4, exit ? (exitFlash > 0 ? '#ff4040' : '#3ddc84') : '#ffb020', near || (exit && exitFlash > 0), now);
+    } else if (kind === 'airlock') {
+      // glass panel slides up into the header when a crate comes
+      const k = exit ? 1 : 0, gh = BELT_Y - DOOR_TOP;
+      const want = xs.some((x) => x > -CRATE * 1.5 && x < DW + 40) ? 1 : 0;
+      airlock[k] += (want - airlock[k]) * Math.min(1, dt * 9);
+      const py = BELT_Y - gh * airlock[k];
+      if (py > DOOR_TOP + 1) {
+        ctx.fillStyle = 'rgba(120,220,255,0.28)'; ctx.fillRect(DW - 16, DOOR_TOP, 8, py - DOOR_TOP);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(DW - 15, DOOR_TOP, 1.5, Math.max(0, py - DOOR_TOP - 4));
+      }
+      blit(doorCache.b);
+      const led = airlock[k] > 0.5 ? '#3ddc84' : '#ff4d6d';
+      ctx.fillStyle = led; ctx.beginPath(); ctx.arc(DW / 2, top + 10, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.35; ctx.beginPath(); ctx.arc(DW / 2, top + 10, 9, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+    } else if (kind === 'timber') {
+      // lantern hanging from the beam, swinging a little
+      const sw = Math.sin(now / 700) * 0.18;
+      const f = 0.85 + 0.15 * Math.sin(now / 80) * Math.sin(now / 33);
+      ctx.save(); ctx.translate(DW + 10, top + 18); ctx.rotate(sw);
+      ctx.strokeStyle = '#222'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 12); ctx.stroke();
+      const gl = glow('rgba(255,200,120,1)');
+      if (gl) { ctx.globalAlpha = 0.28 * f; ctx.drawImage(gl, -40, -20, 80, 80); ctx.globalAlpha = 1; }
+      ctx.fillStyle = '#2a2a2a'; ctx.fillRect(-5, 12, 10, 3); ctx.fillRect(-5, 25, 10, 3);
+      ctx.fillStyle = `rgba(255,200,110,${f})`; ctx.fillRect(-4, 15, 8, 10);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
   function hazardStripe(x, y, w, h, phase = 0) {
     ctx.save();
     ctx.beginPath();
@@ -4130,7 +4431,11 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     const spd = g && mode === 'play' ? (g.tutorial ? (g.tutorial.hold ? 0 : 120) : g.shiftFlash > 0.6 ? 0 : L.speed(g)) : 60;
     beltPhase += spd * dt;
     // belt rails and rollers are in the pre-drawn background; only the moving pattern is drawn here
+    // the moving belt pattern stops at the doors, where the belt goes into the dark
+    ctx.save(); ctx.beginPath(); ctx.rect(DW - 10, BELT_Y - 4, W - 2 * (DW - 10), 40); ctx.clip();
     drawBeltPattern(skin('belt'));
+    ctx.restore();
+    if (doorKind() === 'cold') { drawDoor(false, false, now, dt); drawDoor(true, false, now, dt); }
 
     // crates
     if (g) {
@@ -4139,8 +4444,8 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     }
     if (mineTheme()) drawDarkness(now);
     // entry door and exit chute, drawn over the crates so they come out of and go into the wall
-    hazardStripe(0, BELT_Y - 64, 26, 64, 0);
-    hazardStripe(W - 26, BELT_Y - 64, 26, 64, 0);
+    exitFlash = Math.max(0, exitFlash - dt);
+    drawDoor(false, true, now, dt); drawDoor(true, true, now, dt);
 
     if (g && g.tutorial && mode === 'play') drawTutorial(g, now);
 
@@ -4172,9 +4477,12 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 6;
       ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-      ctx.strokeText(f.text, f.x, f.y);
+      // keep the text whole on screen and off the doors (an escaped crate's text used to be cut at the edge)
+      const half = ctx.measureText(f.text).width / 2;
+      const fx = Math.max(DW + 8 + half, Math.min(W - DW - 8 - half, f.x));
+      ctx.strokeText(f.text, fx, f.y);
       ctx.fillStyle = f.col;
-      ctx.fillText(f.text, f.x, f.y);
+      ctx.fillText(f.text, fx, f.y);
     }
     ctx.globalAlpha = 1;
 
@@ -4382,7 +4690,6 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
   };
 
   // ------------------------------------------------------------------ boot
-  Audio.setSong(theme);
   resize();
   I18n.apply();
   refreshMeta();
@@ -4399,6 +4706,7 @@ if (typeof window !== 'undefined') window.BeltMeta = META;
     window.__belt = {
       get game() { return game; }, get mode() { return mode; }, save, press, i18n: I18n,
       get musicPlaying() { return Audio.musicPlaying; },
+      get song() { return Audio.song; },
       get dprCap() { return dprCap; },
       get theme() { return theme; },
       get viewFactory() { return viewFactory; },
