@@ -534,7 +534,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
   </section>
 </div>
 
-<script>window.BELT_VERSION="1.9.1";</script><script>// Belt Panic — text in English and Spanish. The phone's language picks one; Settings can change it.
+<script>window.BELT_VERSION="1.9.2";</script><script>// Belt Panic — text in English and Spanish. The phone's language picks one; Settings can change it.
 (function () {
   'use strict';
   const STR = {
@@ -545,7 +545,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       intro_mine: 'Mine: it is dark! You only see crates under the piston lamps. Coins x2.2',
       flipTxt: 'SWITCH!',
       ev_bombs: 'Bomb week', ev_bombs_d: 'twice the bombs, twice the coins',
-      ev_gold: 'Gold rush', ev_gold_d: 'three times the gold, each one worth 15',
+      ev_gold: 'Gold rush', ev_gold_d: 'twice the gold, each one worth 8',
       ev_speed: 'Turbo week', ev_speed_d: 'belt 20% faster, XP x1.5',
       ev_orders: 'Order frenzy', ev_orders_d: 'orders every 4 s, pay x2',
       ev_mystery: 'Mystery week', ev_mystery_d: 'mystery crates from the start, coins x1.5',
@@ -654,7 +654,7 @@ p { margin: 0; color: var(--muted); line-height: 1.3; }
       intro_mine: 'Mina: ¡está oscuro! Solo ves las cajas bajo las lámparas de los pistones. Monedas x2,2',
       flipTxt: '¡CAMBIO!',
       ev_bombs: 'Semana de bombas', ev_bombs_d: 'el doble de bombas, el doble de monedas',
-      ev_gold: 'Fiebre del oro', ev_gold_d: 'el triple de oro y cada una vale 15',
+      ev_gold: 'Fiebre del oro', ev_gold_d: 'el doble de oro y cada una vale 8',
       ev_speed: 'Semana turbo', ev_speed_d: 'cinta 20% más rápida, XP x1,5',
       ev_orders: 'Lluvia de pedidos', ev_orders_d: 'pedidos cada 4 s, pago x2',
       ev_mystery: 'Semana misteriosa', ev_mystery_d: 'cajas misterio desde el inicio, monedas x1,5',
@@ -811,7 +811,7 @@ const FACTORIES = [
 // Weekly events (see meta.js eventFor): what each one changes in a shift
 const EVENT_MODS = {
   bombs: { bombMul: 2, coinMul: 2 },
-  gold: { goldMul: 3, goldPts: 15 },
+  gold: { goldMul: 2, goldPts: 8 },   // was x3 and 15 points: it doubled scores and coins for the week
   speed: { speedMul: 1.2, xpMul: 1.5 },
   orders: { orderGap: 4, orderMul: 2 },
   mystery: { mysteryFromStart: true, coinMul: 1.5 },
@@ -1650,8 +1650,9 @@ function addXp(save, n) {
 // ------------------------------------------------------------------ weekly events (same for everyone, Monday to Sunday)
 const EVENTS = ['gold', 'bombs', 'orders', 'speed', 'mystery', 'gears'];
 const WEEK_GOALS = {
-  bombs: { stat: 'dodge', target: 80 }, gold: { stat: 'gold', target: 60 }, speed: { stat: 'sorted', target: 400 },
-  orders: { stat: 'orders', target: 15 }, mystery: { stat: 'mystery', target: 60 }, gears: { stat: 'gears', target: 8 },
+  // 50% higher than in 1.9.0: every simulated player finished every week
+  bombs: { stat: 'dodge', target: 120 }, gold: { stat: 'gold', target: 90 }, speed: { stat: 'sorted', target: 600 },
+  orders: { stat: 'orders', target: 23 }, mystery: { stat: 'mystery', target: 90 }, gears: { stat: 'gears', target: 12 },
 };
 const WEEK_REWARD = { coins: 300, gears: 2 };
 function mondayOf(date) {
